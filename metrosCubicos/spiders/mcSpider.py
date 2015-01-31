@@ -140,8 +140,7 @@ class MCSpider(scrapy.Spider):
                 url = wElement.get_attribute('href')                
 
                 yield Request(url, callback=self.parseItem)
-
-            """                
+       
             wElement = self.paginationDriver.find_element_by_xpath('//p[@class=\'pager\'][1]/button[last()]')        
 
             if wElement:
@@ -153,8 +152,6 @@ class MCSpider(scrapy.Spider):
 
                 else:
                     break                         
-            """
-            break                    
 
         self.paginationDriver.close()        
 
