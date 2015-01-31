@@ -18,11 +18,20 @@ class MetrosCubicosPipeline(object):
 		if intStr:
 			return int(intStr)		
 		else:
-			return None					
+			return None		
+
+	def getCoordinate(self, floatStr):
+
+		floatStr = re.sub("[^0123456789\.-]", '', floatStr)
+
+		if floatStr:
+			return float(floatStr)		
+		else:
+			return None							
 
 	def getFloat(self, floatStr):
 
-		floatStr = re.sub("[^0123456789\.-]", '', floatStr)
+		floatStr = re.sub("[^0123456789\.]", '', floatStr)
 
 		if floatStr:
 			return float(floatStr)		
@@ -64,8 +73,8 @@ class MetrosCubicosPipeline(object):
 				item['MC_Photo_10'].encode('utf-8'),
 				item['MC_Video'].encode('utf-8'),
 
-				self.getFloat(item['MC_Latitude']),
-				self.getFloat(item['MC_Longitude']),
+				self.getCoordinate(item['MC_Latitude']),
+				self.getCoordinate(item['MC_Longitude']),
 
 				item['MC_Telephone'].encode('utf-8'),
 
