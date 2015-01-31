@@ -1,0 +1,99 @@
+create table metrosCubicos
+(
+	MC_Categoria_de_inmueble VARCHAR(20),
+	MC_Tipo_de_inmueble VARCHAR(50),
+
+	MC_Estado TEXT,
+	MC_Municipio TEXT,
+	MC_Colonia TEXT,
+	MC_Calle_avenida TEXT,
+
+	MC_Photo_1 TEXT,
+	MC_Photo_2 TEXT,
+	MC_Photo_3 TEXT,
+	MC_Photo_4 TEXT,
+	MC_Photo_5 TEXT,
+	MC_Photo_6 TEXT,
+	MC_Photo_7 TEXT,
+	MC_Photo_8 TEXT,
+	MC_Photo_9 TEXT,
+	MC_Photo_10 TEXT,
+	MC_Video TEXT,
+
+	MC_Latitude FLOAT,
+	MC_Longitude FLOAT,
+	MC_Telephone TEXT,
+
+	MC_Metros_cuadrados_de_construccion TEXT,
+	MC_Número_de_recámaras TEXT,
+	MC_Número_de_baños TEXT,
+	MC_Número_de_espacios_para_autos TEXT,
+	MC_Edad TEXT,
+	MC_Nivel_en_el_que_se_encuentra TEXT,
+	MC_Ubicación_cuarto_de_servicio TEXT,
+	MC_Indiviso TEXT,
+	MC_Línea_telefónica TEXT,
+	MC_Número_de_departamentos TEXT,
+	MC_Cuota_de_mantenimiento TEXT,
+	MC_Clave_interna TEXT,
+	MC_Gas_Natural TEXT,
+	MC_Amueblado TEXT,
+
+	MC_Estudio TINYINT(1),
+	MC_Cisterna TINYINT(1),
+	MC_Aire_acondicionado TINYINT(1),
+	MC_Jacuzzi TINYINT(1),
+	MC_Escuelas_cercanas TINYINT(1),
+	MC_Alberca TINYINT(1),
+	MC_Zona_arbolada TINYINT(1),
+	MC_Cocina_integral TINYINT(1),
+	MC_Chimenea TINYINT(1),
+	MC_Vigilancia_privada TINYINT(1),
+	MC_Accesos TINYINT(1),
+	MC_Casa_de_veraneo TINYINT(1),
+	MC_Parques_cercanos TINYINT(1),
+	MC_Vista_panoramica TINYINT(1),
+	MC_Calefacción TINYINT(1),
+	MC_Gimnasios_cercanos TINYINT(1),
+	MC_Metros_cuadrados_de_jardín TINYINT(1),
+	MC_No_se_admiten_niños TINYINT(1),
+	MC_No_se_admiten_animales TINYINT(1),
+	MC_Sólo_familias TINYINT(1),
+	MC_Para_ejecutivos TINYINT(1),
+
+	MC_Precio_de_venta TINYINT(1),
+
+	MC_Monto_Precio_de_venta FLOAT,
+	MC_Moneda_Precio_de_venta VARCHAR(10),
+	MC_Concepto_precio_de_venta VARCHAR(25),
+
+	MC_Precio_de_renta TINYINT(1),
+
+	MC_Monto_Precio_de_renta FLOAT,
+	MC_Moneda_Precio_de_renta VARCHAR(10),
+	MC_Concepto_precio_de_renta VARCHAR(25),
+
+	MC_Renta_vacacional TINYINT(1),
+
+	MC_Renta_vacacional_mensual TINYINT(1),
+
+	MC_Monto_Precio_de_renta_vacacional_mensual FLOAT,
+	MC_Moneda_Precio_de_renta_vacacional_mensual VARCHAR(10),
+
+	MC_Renta_vacacional_semanal TINYINT(1),
+
+	MC_Monto_Precio_de_renta_vacacional_semanal FLOAT,
+	MC_Moneda_Precio_de_renta_vacacional_semanal VARCHAR(10),
+
+	MC_Renta_vacacional_fin_de_semana TINYINT(1),
+
+	MC_Monto_Precio_de_renta_vacacional_fin_de_semana FLOAT,
+	MC_Moneda_Precio_de_renta_vacacional_fin_de_semana VARCHAR(10),
+
+	MC_Renta_vacacional_diaria TINYINT(1),
+
+	MC_Monto_Precio_de_renta_vacacional_diaria FLOAT,
+	MC_Moneda_Precio_de_renta_vacacional_diaria VARCHAR(10)
+
+
+) DEFAULT CHARSET=utf8;
