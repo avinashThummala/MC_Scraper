@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys
-import MySQLdb
-import hashlib
+import sys, MySQLdb, hashlib, re
 from scrapy.exceptions import DropItem
 from scrapy.http import Request
 
@@ -13,7 +11,18 @@ class MetrosCubicosPipeline(object):
 		self.conn = MySQLdb.connect(user='root', passwd='baggio', db='pyScrapper', host='localhost', charset="utf8", use_unicode=True)
 		self.cursor = self.conn.cursor()
 
+	def getInteger(self, intStr):
+
+		intStr = re.sub("[^0123456789]", '', intStr)
+
+		if intStr:
+			return int(intStr)		
+		else:
+			return None					
+
 	def getFloat(self, floatStr):
+
+		floatStr = re.sub("[^0123456789\.]", '', floatStr)
 
 		if floatStr:
 			return float(floatStr)		
@@ -58,16 +67,16 @@ class MetrosCubicosPipeline(object):
 
 				item['MC_Telephone'].encode('utf-8'),
 
-				item['MC_Metros_cuadrados_de_construccion'].encode('utf-8'),
-				item['MC_Numero_de_recamaras'].encode('utf-8'),
-				item['MC_Numero_de_banos'].encode('utf-8'),
-				item['MC_Numero_de_espacios_para_autos'].encode('utf-8'),
-				item['MC_Edad'].encode('utf-8'),
-				item['MC_Nivel_en_el_que_se_encuentra'].encode('utf-8'),
+				self.getFloat(item['MC_Metros_cuadrados_de_construccion']),
+				self.getInteger(item['MC_Numero_de_recamaras']),
+				self.getFloat(item['MC_Numero_de_banos']),
+				self.getInteger(item['MC_Numero_de_espacios_para_autos']),
+				self.getFloat(item['MC_Edad']),
+				self.getInteger(item['MC_Nivel_en_el_que_se_encuentra']),
 				item['MC_Ubicacion_cuarto_de_servicio'].encode('utf-8'),
 				item['MC_Indiviso'].encode('utf-8'),
 				item['MC_Linea_telefonica'].encode('utf-8'),
-				item['MC_Numero_de_departamentos'].encode('utf-8'),
+				self.getInteger(item['MC_Numero_de_departamentos']),
 				item['MC_Cuota_de_mantenimiento'].encode('utf-8'),
 				item['MC_Clave_interna'].encode('utf-8'),
 				item['MC_Gas_Natural'].encode('utf-8'),

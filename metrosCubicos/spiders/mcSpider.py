@@ -278,7 +278,7 @@ class MCSpider(scrapy.Spider):
         else:
             newItem[moneda] = u'Pesos'
 
-        newItem[monto] = re.sub("[^0123456789\.]", '', pStr)            
+        newItem[monto] = pStr            
 
     def fillPriceCategory(self, hxs, newItem):
 
