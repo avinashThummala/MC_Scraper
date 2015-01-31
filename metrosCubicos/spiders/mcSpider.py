@@ -74,6 +74,8 @@ class MCSpider(scrapy.Spider):
 
         newItem = MetroscubicosItem()
 
+        newItem['MC_Listing_URL'] = response.url
+
         self.getAgentTelephone(newItem, response.url)
 
         self.getImageLinks(hxs, newItem)
@@ -139,6 +141,7 @@ class MCSpider(scrapy.Spider):
 
                 yield Request(url, callback=self.parseItem)
 
+            """                
             wElement = self.paginationDriver.find_element_by_xpath('//p[@class=\'pager\'][1]/button[last()]')        
 
             if wElement:
@@ -150,6 +153,8 @@ class MCSpider(scrapy.Spider):
 
                 else:
                     break                         
+            """
+            break                    
 
         self.paginationDriver.close()        
 

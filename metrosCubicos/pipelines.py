@@ -13,7 +13,7 @@ class MetrosCubicosPipeline(object):
 
 	def getInteger(self, intStr):
 
-		intStr = re.sub("[^0123456789]", '', intStr)
+		intStr = re.sub("[^0123456789-]", '', intStr)
 
 		if intStr:
 			return int(intStr)		
@@ -22,7 +22,7 @@ class MetrosCubicosPipeline(object):
 
 	def getFloat(self, floatStr):
 
-		floatStr = re.sub("[^0123456789\.]", '', floatStr)
+		floatStr = re.sub("[^0123456789\.-]", '', floatStr)
 
 		if floatStr:
 			return float(floatStr)		
@@ -38,9 +38,11 @@ class MetrosCubicosPipeline(object):
 				%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
 				%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
 				%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-				%s
+				%s, %s
 				        	
 	        	)""", (
+
+	        	item['MC_Listing_URL'].encode('utf-8'),
 
 				item['MC_Categoria_de_inmueble'].encode('utf-8'),
 				item['MC_Tipo_de_inmueble'].encode('utf-8'),
@@ -135,6 +137,8 @@ class MetrosCubicosPipeline(object):
 	        ))
 
 	        self.conn.commit()
+
+	        return item
 
 	    except MySQLdb.Error, e:
 	        print "Error %d: %s" % (e.args[0], e.args[1])	       

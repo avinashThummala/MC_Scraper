@@ -4,6 +4,8 @@ import scrapy
 
 class MetroscubicosItem(scrapy.Item):
 
+	MC_Listing_URL = scrapy.Field()
+
 	MC_Categoria_de_inmueble = scrapy.Field()
 	MC_Tipo_de_inmueble = scrapy.Field()
 
