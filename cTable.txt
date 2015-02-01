@@ -1,5 +1,7 @@
 create table metrosCubicos
 (
+	MC_Listing_URL TEXT,
+
 	MC_Categoria_de_inmueble VARCHAR(20),
 	MC_Tipo_de_inmueble VARCHAR(50),
 
