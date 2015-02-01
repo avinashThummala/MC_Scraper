@@ -8,7 +8,7 @@ class MetrosCubicosPipeline(object):
 
 	def __init__(self):
 
-		self.conn = MySQLdb.connect(user='root', passwd='baggio', db='pyScrapper', host='localhost', charset="utf8", use_unicode=True)
+		self.conn = MySQLdb.connect(user='root', passwd='baggio', db='pyScraper', host='localhost', charset="utf8", use_unicode=True)
 		self.cursor = self.conn.cursor()
 
 	def getInteger(self, intStr):
@@ -146,8 +146,6 @@ class MetrosCubicosPipeline(object):
 	        ))
 
 	        self.conn.commit()
-
-	        return item
 
 	    except MySQLdb.Error, e:
 	        print "Error %d: %s" % (e.args[0], e.args[1])	       
