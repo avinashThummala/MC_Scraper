@@ -170,7 +170,7 @@ class MCSpider(scrapy.Spider):
                 newItem['MC_Telephone'] = ''			            	
 
         except:
-            self.pageDriver.quit() 
+            newItem['MC_Telephone'] = ''
 
     def getBooleanValues(self, hxs, newItem):
 
