@@ -205,7 +205,14 @@ class MCSpider(scrapy.Spider):
             if keyElements[x] in detailsList:
 
                 index = detailsList.index(keyElements[x])
-                newItem[varList[index]] = 1                                            
+                newItem[varList[index]] = 1   
+
+    def getModifiedValue(self, valStr):
+
+        if valStr and valStr[0]==':':
+            return valStr[1:].strip()
+        else:            
+            return valStr
 
     def getListingDetails(self, hxs, newItem):
 
@@ -240,7 +247,7 @@ class MCSpider(scrapy.Spider):
             if dElements[x] in detailsList:
 
                 index = detailsList.index(dElements[x])
-                newItem[varList[index]] = dElements[x+1].strip()            
+                newItem[varList[index]] = self.getModifiedValue( dElements[x+1].strip() )
 
         keyElements = hxs.xpath("//ul[@class=\'adicionales\']/li/b/text()").extract()  
         valueElements = hxs.xpath("//ul[@class=\'adicionales\']/li/text()").extract()  
@@ -255,7 +262,7 @@ class MCSpider(scrapy.Spider):
             if keyElements[x] in detailsList:
 
                 index = detailsList.index(keyElements[x])
-                newItem[varList[index]] = valueElements[x].strip()
+                newItem[varList[index]] = self.getModifiedValue( valueElements[x].strip() )
 
     def getImageLinks(self, hxs, newItem):
 
