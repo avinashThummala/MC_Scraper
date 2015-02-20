@@ -75,12 +75,16 @@ class MCSpider(scrapy.Spider):
         newItem = MetroscubicosItem()
 
         newItem['MC_Listing_URL'] = response.url
+        newItem['MC_Ad_Code'] = self.extractText( hxs.xpath("//span[@id=\'alfaclave\']/text()").extract(), 0)
+
+        newItem['MC_Title'] = self.extractText( hxs.xpath("//div[@class=\'address-detalle-new\']/text()").extract(), 0)
+        newItem['MC_Description'] = self.extractText( hxs.xpath("string(//div[@id=\'dvDescripcionAc\']/div)").extract(), 0)
 
         self.getAgentTelephone(newItem, response.url)
 
         self.getImageLinks(hxs, newItem)
 
-        string = self.extractText(hxs.xpath("//div[@class=\'address-detalle-new\']/text()").extract(), 0).strip()
+        string = self.extractText(hxs.xpath("//div[@class=\'address-detalle-new\']/text()").extract(), 0)
 
         if string:        
             newItem['MC_Estado'] = string[string.rindex(',')+1:].strip()
@@ -97,7 +101,7 @@ class MCSpider(scrapy.Spider):
         newItem['MC_Colonia'] = self.extractText( hxs.xpath("//section[@itemtype=\'http://schema.org/PostalAddress\']/meta[@itemprop=\'addressLocality\']/@content").extract(), 0)
         newItem['MC_Calle_avenida'] = self.extractText( hxs.xpath("//section[@itemtype=\'http://schema.org/PostalAddress\']/meta[@itemprop=\'streetAddress\']/@content").extract(), 0)
 
-        string = self.extractText( hxs.xpath("//h1[@class=\'title-detalle-new\']/span[@itemprop=\'name\']/text()").extract(), 0).strip()        
+        string = self.extractText( hxs.xpath("//h1[@class=\'title-detalle-new\']/span[@itemprop=\'name\']/text()").extract(), 0)
 
         if string:
 
@@ -124,8 +128,17 @@ class MCSpider(scrapy.Spider):
 
         self.getPriceDetails(hxs, newItem)
 
-        if newItem['MC_Numero_de_recamaras']=='' and newItem['MC_Numero_de_banos']=='':
-            self.checkListingDetails(hxs, newItem)
+        if newItem['MC_Numero_de_banos']=='':
+            self.checkListingDetails(hxs, newItem, 1)
+
+        if newItem['MC_Numero_de_recamaras']=='':
+            self.checkListingDetails(hxs, newItem, 2)
+
+        if newItem['MC_Metros_cuadrados_de_construccion']=='':
+            self.checkListingDetails(hxs, newItem, 3)   
+
+        if newItem['MC_Numero_de_espacios_para_autos']=='':
+            self.checkListingDetails(hxs, newItem, 4)                        
 
         return newItem          
 
@@ -218,17 +231,18 @@ class MCSpider(scrapy.Spider):
 
         detailsList=[
 
-            u'Metros cuadrados de construcción', u'Recámaras', u'Baños', u'Número de espacios para autos',  
+            u'm2 construcción', u'Recámaras', u'Baños', u'Número de espacios para autos',  
             u'Edad', u'Nivel en el que se encuentra', u'Ubicación cuarto de servicio', u'Indiviso', 
             u'Línea telefónica', u'Departamentos', u'Cuota de mantenimiento', u'Clave interna', u'Gas Natural', 
-            u'Amueblado'             
+            u'Amueblado', u'Metros cuadrados de construcción'
         ]
 
         varList=[
 
             'MC_Metros_cuadrados_de_construccion', 'MC_Numero_de_recamaras', 'MC_Numero_de_banos', 'MC_Numero_de_espacios_para_autos',
             'MC_Edad', 'MC_Nivel_en_el_que_se_encuentra', 'MC_Ubicacion_cuarto_de_servicio', 'MC_Indiviso', 'MC_Linea_telefonica',
-            'MC_Numero_de_departamentos', 'MC_Cuota_de_mantenimiento', 'MC_Clave_interna', 'MC_Gas_Natural','MC_Amueblado'                     
+            'MC_Numero_de_departamentos', 'MC_Cuota_de_mantenimiento', 'MC_Clave_interna', 'MC_Gas_Natural','MC_Amueblado',
+            'MC_Metros_cuadrados_de_construccion'                     
         ]
 
         for x in varList:
@@ -375,14 +389,29 @@ class MCSpider(scrapy.Spider):
 
             index = index+1
 
-    def getRelevantIndexes(self, hxs):
+    def getRelevantIndexes(self, hxs, numItem):
 
         tHeaderList = hxs.xpath('//div[@id=\'dvUnidadesAc\']/div/table/thead/tr/th/text()').extract()            
 
-        if tHeaderList:             
-            return tHeaderList.index('Precio')+1, tHeaderList.index(u'Baños')+1, tHeaderList.index(u'Recámaras')+1                        
+        if tHeaderList:  
+
+            if numItem==1:
+                return tHeaderList.index('Precio')+1, tHeaderList.index(u'Baños')+1
+            
+            elif numItem==2:
+                return tHeaderList.index('Precio')+1, tHeaderList.index(u'Recámaras')+1
+
+            elif numItem==3:
+                return tHeaderList.index('Precio')+1, tHeaderList.index(u'm² const.')+1
+
+            elif numItem==4:
+                return tHeaderList.index('Precio')+1, tHeaderList.index(u'Espacios p/auto')+1
+
+            else:
+                return -1,-1
+
         else:
-            return -1, -1, -1            
+            return -1, -1            
 
     def getRelevantRowIndex(self, hxs, pCIndex):
 
@@ -402,21 +431,30 @@ class MCSpider(scrapy.Spider):
 
         return -1                                
 
-    def checkListingDetails(self, hxs, newItem):
+    def checkListingDetails(self, hxs, newItem, numItem):
 
-        pCIndex, bCIndex, rCIndex = self.getRelevantIndexes(hxs)
+        pCIndex, oIndex = self.getRelevantIndexes(hxs, numItem)
 
         if pCIndex<0:
             return
 
-        if bCIndex>0 or rCIndex>0:
+        rowIndex = self.getRelevantRowIndex(hxs, pCIndex)
 
-            rowIndex = self.getRelevantRowIndex(hxs, pCIndex)
+        if rowIndex<0:
+            return          
 
-            if rowIndex>0:                
-         
-                if bCIndex>0:
-                    newItem['MC_Numero_de_banos'] = self.extractText( hxs.xpath('//div[@id=\'dvUnidadesAc\']/div/table/tbody/tr['+str(rowIndex)+']/td['+str(bCIndex)+']/text()').extract(), 0)
+        if numItem==1:
+            if oIndex>0:
+                newItem['MC_Numero_de_banos'] = self.extractText( hxs.xpath('//div[@id=\'dvUnidadesAc\']/div/table/tbody/tr['+str(rowIndex)+']/td['+str(oIndex)+']/text()').extract(), 0)
 
-                if rCIndex>0:
-                    newItem['MC_Numero_de_recamaras'] = self.extractText( hxs.xpath('//div[@id=\'dvUnidadesAc\']/div/table/tbody/tr['+str(rowIndex)+']/td['+str(rCIndex)+']/text()').extract(), 0)                
+        elif numItem==2:
+            if oIndex>0:
+                newItem['MC_Numero_de_recamaras'] = self.extractText( hxs.xpath('//div[@id=\'dvUnidadesAc\']/div/table/tbody/tr['+str(rowIndex)+']/td['+str(oIndex)+']/text()').extract(), 0)
+
+        elif numItem==3:
+            if oIndex>0:
+                newItem['MC_Metros_cuadrados_de_construccion'] = self.extractText( hxs.xpath('//div[@id=\'dvUnidadesAc\']/div/table/tbody/tr['+str(rowIndex)+']/td['+str(oIndex)+']/text()').extract(), 0)
+
+        elif numItem==4:
+            if oIndex>0:
+                newItem['MC_Numero_de_espacios_para_autos'] = self.extractText( hxs.xpath('//div[@id=\'dvUnidadesAc\']/div/table/tbody/tr['+str(rowIndex)+']/td['+str(oIndex)+']/text()').extract(), 0)

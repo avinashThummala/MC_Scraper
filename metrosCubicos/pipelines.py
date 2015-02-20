@@ -47,11 +47,15 @@ class MetrosCubicosPipeline(object):
 				%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
 				%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
 				%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-				%s, %s
+				%s, %s, %s, %s, %s
 				        	
 	        	)""", (
 
 	        	item['MC_Listing_URL'].encode('utf-8'),
+	        	item['MC_Ad_Code'].encode('utf-8'),	        	
+
+	        	item['MC_Title'].encode('utf-8'),
+	        	item['MC_Description'].encode('utf-8'),	        		        	
 
 				item['MC_Categoria_de_inmueble'].encode('utf-8'),
 				item['MC_Tipo_de_inmueble'].encode('utf-8'),
