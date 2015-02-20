@@ -314,7 +314,7 @@ class MCSpider(scrapy.Spider):
         for x in varList:
             newItem[x] = 0
 
-        priceStr = self.extractText( hxs.xpath("//p[@class=\'precio \']/span/text()").extract(), 0)            
+        priceStr = self.getPrice(hxs)        
 
         if newItem['MC_Categoria_de_inmueble'] == 'Renta':
 
@@ -391,27 +391,28 @@ class MCSpider(scrapy.Spider):
 
     def getRelevantIndexes(self, hxs, numItem):
 
-        tHeaderList = hxs.xpath('//div[@id=\'dvUnidadesAc\']/div/table/thead/tr/th/text()').extract()            
+        tHeaderList = hxs.xpath('//table[@class=\'table table-striped\']/thead/tr/th/text()').extract()
 
-        if tHeaderList:  
+        try:
+            if tHeaderList:  
 
-            if numItem==1:
-                return tHeaderList.index('Precio')+1, tHeaderList.index(u'Baños')+1
-            
-            elif numItem==2:
-                return tHeaderList.index('Precio')+1, tHeaderList.index(u'Recámaras')+1
+                if numItem==1:
+                    return tHeaderList.index('Precio')+1, tHeaderList.index(u'Baños')+1
+                
+                elif numItem==2:
+                    return tHeaderList.index('Precio')+1, tHeaderList.index(u'Recámaras')+1
 
-            elif numItem==3:
-                return tHeaderList.index('Precio')+1, tHeaderList.index(u'm² const.')+1
+                elif numItem==3:
+                    return tHeaderList.index('Precio')+1, tHeaderList.index(u'm² const.')+1
 
-            elif numItem==4:
-                return tHeaderList.index('Precio')+1, tHeaderList.index(u'Espacios p/auto')+1
+                elif numItem==4:
+                    return tHeaderList.index('Precio')+1, tHeaderList.index(u'Espacios p/auto')+1
 
             else:
-                return -1,-1
-
-        else:
-            return -1, -1            
+                return -1, -1
+                
+        except:
+            return -1,-1                
 
     def getRelevantRowIndex(self, hxs, pCIndex):
 
@@ -421,10 +422,10 @@ class MCSpider(scrapy.Spider):
 
             index = index+1
 
-            cList = hxs.xpath('//div[@id=\'dvUnidadesAc\']/div/table/tbody/tr['+str(index)+']/td['+str(pCIndex)+']/text()').extract()
+            cList = hxs.xpath('//table[@class=\'table table-striped\']/tbody/tr['+str(index)+']/td['+str(pCIndex)+']/text()').extract()
 
             if cList:
-                if self.extractText( cList, 0) == self.extractText( hxs.xpath("//p[@class=\'precio \']/span/text()").extract(), 0):
+                if self.compareFloats( self.extractText( cList, 0), self.getPrice(hxs) ):
                     return index
             else:
                 break
@@ -445,16 +446,45 @@ class MCSpider(scrapy.Spider):
 
         if numItem==1:
             if oIndex>0:
-                newItem['MC_Numero_de_banos'] = self.extractText( hxs.xpath('//div[@id=\'dvUnidadesAc\']/div/table/tbody/tr['+str(rowIndex)+']/td['+str(oIndex)+']/text()').extract(), 0)
+                newItem['MC_Numero_de_banos'] = self.extractText( hxs.xpath('//table[@class=\'table table-striped\']/tbody/tr['+str(rowIndex)+']/td['+str(oIndex)+']/text()').extract(), 0)
 
         elif numItem==2:
             if oIndex>0:
-                newItem['MC_Numero_de_recamaras'] = self.extractText( hxs.xpath('//div[@id=\'dvUnidadesAc\']/div/table/tbody/tr['+str(rowIndex)+']/td['+str(oIndex)+']/text()').extract(), 0)
+                newItem['MC_Numero_de_recamaras'] = self.extractText( hxs.xpath('//table[@class=\'table table-striped\']/tbody/tr['+str(rowIndex)+']/td['+str(oIndex)+']/text()').extract(), 0)
 
         elif numItem==3:
             if oIndex>0:
-                newItem['MC_Metros_cuadrados_de_construccion'] = self.extractText( hxs.xpath('//div[@id=\'dvUnidadesAc\']/div/table/tbody/tr['+str(rowIndex)+']/td['+str(oIndex)+']/text()').extract(), 0)
+                newItem['MC_Metros_cuadrados_de_construccion'] = self.extractText( hxs.xpath('//table[@class=\'table table-striped\']/tbody/tr['+str(rowIndex)+']/td['+str(oIndex)+']/text()').extract(), 0)
 
         elif numItem==4:
             if oIndex>0:
-                newItem['MC_Numero_de_espacios_para_autos'] = self.extractText( hxs.xpath('//div[@id=\'dvUnidadesAc\']/div/table/tbody/tr['+str(rowIndex)+']/td['+str(oIndex)+']/text()').extract(), 0)
+                newItem['MC_Numero_de_espacios_para_autos'] = self.extractText( hxs.xpath('//table[@class=\'table table-striped\']/tbody/tr['+str(rowIndex)+']/td['+str(oIndex)+']/text()').extract(), 0)
+
+    def getFloat(self, floatStr):
+
+        floatStr = re.sub("[^0123456789\.]", '', floatStr)
+
+        if floatStr:
+            return float(floatStr)      
+        else:
+            return None             
+
+    def compareFloats(self, str1, str2):
+
+        f1=self.getFloat(str1)
+        f2=self.getFloat(str2)
+
+        if f1!=None and f2!=None:
+            if f1==f2:
+                return True
+
+        return False
+
+    def getPrice(self, hxs):
+
+        priceStr = self.extractText( hxs.xpath("//p[@class=\'precio \']/span/text()").extract(), 0)
+
+        if priceStr:
+            return priceStr
+        else:
+            return self.extractText( hxs.xpath("//p[@class=\'precio bajo\']/span/text()").extract(), 0)                 
