@@ -171,10 +171,10 @@ class MCSpider(scrapy.Spider):
     def getAgentTelephone(self, newItem, url):
 
         self.pageDriver.get(url)
-
-        self.pageDriver.find_element_by_xpath("//div[@id=\'dvFon\']").click()
-
+        
         try:
+            self.pageDriver.find_element_by_xpath("//div[@id=\'dvFon\']").click()
+
             phoneNum = WebDriverWait(self.pageDriver, 40).until(EC.presence_of_element_located((By.ID, "dvMuestraFon")) )
 
             if phoneNum:
@@ -183,6 +183,7 @@ class MCSpider(scrapy.Spider):
                 newItem['MC_Telephone'] = ''			            	
 
         except:
+            print "Unable to obtain agent's phone number"
             newItem['MC_Telephone'] = ''
 
     def getBooleanValues(self, hxs, newItem):
