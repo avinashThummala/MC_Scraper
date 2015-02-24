@@ -3,62 +3,48 @@
 
 import scrapy, sys, locale, re, time
 from metrosCubicos.items import MetroscubicosItem
+
+from startUrls import *
+
 from scrapy.http import Request
 from scrapy import Selector
+
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 DOMAIN = 'www.metroscubicos.com'
-URL = 'http://www.metroscubicos.com/resultados/'
-
-def wait_for(condition_function):
-
-    start_time = time.time()
-
-    while time.time() < start_time + 180:
-
-        if condition_function():
-            return True
-        else:
-            time.sleep(5)
-
-    raise Exception(
-        'Timeout waiting for {}'.format(condition_function.__name__)
-    )
-
-class wait_for_page_load(object):
-
-    def __init__(self, browser):
-        self.browser = browser
-
-    def __enter__(self):
-        self.old_text = self.browser.find_element_by_xpath('//div[@class=\'total_div\']/span[@class=\'total\']').text
-
-    def page_has_loaded(self):
-
-        new_text = self.browser.find_element_by_xpath('//div[@class=\'total_div\']/span[@class=\'total\']').text
-        return new_text != self.old_text
-
-    def __exit__(self, *_):
-        wait_for(self.page_has_loaded) 
+DUMMY_URL = 'http://www.metroscubicos.com/resultados/'
+WAIT_TIME = 40
 
 class MCSpider(scrapy.Spider):
 
     name = 'mcspider'
     allowed_domains = [DOMAIN]
-    start_urls = [
-        URL
-    ]
+    start_urls = getStartURLS()
 
     def __init__(self):
 
-        self.paginationDriver = webdriver.PhantomJS(service_args=['--load-images=no'])
-        self.paginationDriver.set_window_size(1120, 550)
+        options = webdriver.ChromeOptions()
+        options.add_extension("Block-image_v1.0.crx")
 
-        self.pageDriver = webdriver.PhantomJS(service_args=['--load-images=no'])
-        self.pageDriver.set_window_size(1120, 550)        
+        self.driver = webdriver.Chrome(chrome_options = options)
+
+        self.enterEmailInfo()
+
+    def enterEmailInfo(self):
+
+        self.driver.get(DUMMY_URL)
+
+        mElement = WebDriverWait(self.driver, WAIT_TIME*15).until(EC.visibility_of_element_located((By.ID, "ouibounce-modal")) )
+
+        tEmail = self.driver.find_element_by_xpath("//form[@id=\'bounce-form\']/input[@name=\'email\']")
+        tEmail.send_keys('dhthummala@gmail.com')
+
+        sButton = self.driver.find_element_by_xpath("//form[@id=\'bounce-form\']/input[@type=\'button\']")
+        sButton.click()         
 
     def extractText(self, eList, index):
 
@@ -66,9 +52,9 @@ class MCSpider(scrapy.Spider):
             return eList[index].strip()
 
         else:
-            return ''
-                            
-    def parseItem(self, response):
+            return ''                            
+
+    def parse(self, response):
 
         hxs = Selector(response)
 
@@ -140,47 +126,19 @@ class MCSpider(scrapy.Spider):
         if newItem['MC_Numero_de_espacios_para_autos']=='':
             self.checkListingDetails(hxs, newItem, 4)                        
 
-        return newItem          
-
-    def parse(self, response):
-
-        self.paginationDriver.get(response.url)        
-
-        while True:
-
-            for wElement in self.paginationDriver.find_elements_by_xpath('//div[@id=\'new-prop-list\']/div/div[@class=\'property-data-container \']/div[@class=\'desc\']/a'):  
-
-                url = wElement.get_attribute('href')                
-
-                yield Request(url, callback=self.parseItem)
-       
-            wElement = self.paginationDriver.find_element_by_xpath('//p[@class=\'pager\'][1]/button[last()]')        
-
-            if wElement:
-
-                if wElement.text == 'Siguiente>>':
-
-                    with wait_for_page_load(self.paginationDriver):
-                        wElement.click()                
-
-                else:
-                    break                         
-
-        self.paginationDriver.close()        
+        yield newItem
 
     def getAgentTelephone(self, newItem, url):
 
-        self.pageDriver.get(url)
+        self.driver.get(url)
         
         try:
-            self.pageDriver.find_element_by_xpath("//div[@id=\'dvFon\']").click()
 
-            phoneNum = WebDriverWait(self.pageDriver, 40).until(EC.presence_of_element_located((By.ID, "dvMuestraFon")) )
+            wElement = WebDriverWait(self.driver, 40).until(EC.element_to_be_clickable((By.ID, "dvFon")) )
+            wElement.click()
 
-            if phoneNum:
-                newItem['MC_Telephone'] = phoneNum.text.replace("Tel: ", "")                                              
-            else:
-                newItem['MC_Telephone'] = ''			            	
+            phoneNum = WebDriverWait(self.driver, 40).until(EC.element_to_be_clickable((By.ID, "dvMuestraFon")) )
+            newItem['MC_Telephone'] = phoneNum.text.replace("Tel: ", "")                                              
 
         except:
             print "Unable to obtain agent's phone number"
