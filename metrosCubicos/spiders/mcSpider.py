@@ -4,7 +4,9 @@
 import scrapy, sys, locale, re, time
 from metrosCubicos.items import MetroscubicosItem
 
-from startUrls import *
+import part0;
+import part1;
+import part2;
 
 from scrapy.http import Request
 from scrapy import Selector
@@ -23,7 +25,7 @@ class MCSpider(scrapy.Spider):
 
     name = 'mcspider'
     allowed_domains = [DOMAIN]
-    start_urls = getStartURLS()
+    start_urls = part0.getStartURLS()+part1.getStartURLS()+part2.getStartURLS()
 
     def __init__(self):
 
@@ -134,10 +136,10 @@ class MCSpider(scrapy.Spider):
         
         try:
 
-            wElement = WebDriverWait(self.driver, 40).until(EC.element_to_be_clickable((By.ID, "dvFon")) )
+            wElement = WebDriverWait(self.driver, WAIT_TIME).until(EC.element_to_be_clickable((By.ID, "dvFon")) )
             wElement.click()
 
-            phoneNum = WebDriverWait(self.driver, 40).until(EC.element_to_be_clickable((By.ID, "dvMuestraFon")) )
+            phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.element_to_be_clickable((By.ID, "dvMuestraFon")) )
             newItem['MC_Telephone'] = phoneNum.text.replace("Tel: ", "")                                              
 
         except:
