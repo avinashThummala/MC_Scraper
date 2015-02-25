@@ -9,7 +9,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-DUMMY_URL = 'http://www.metroscubicos.com/resultados/'
+DUMMY_URL = 'http://www.metroscubicos.com/resultados/#sort=relevance&selected=1'
 START_URL = 'http://www.metroscubicos.com/resultados/#sort=relevance&selected='
 
 WAIT_FOR_ELEMENT = 20
@@ -22,7 +22,7 @@ NUM_URLS_PER_PAGE=15
 
 TEMPLATE_NAME = 'startUrls.py.template'
 
-def wait_for(condition_function):
+def wait_for(condition_function, browser, isFirstTime):
 
     start_time = time.time()
 
@@ -33,9 +33,18 @@ def wait_for(condition_function):
         else:
             time.sleep(WAIT_FOR_CHECK)
 
-    raise Exception(
-        'Timeout waiting for {}'.format(condition_function.__name__)
-    )
+    if isFirstTime:          
+
+        browser.refresh()
+        time.sleep(WAIT_FOR_PAGE_LOAD)
+
+        wait_for(condition_function, browser, False)
+
+    else:
+
+        raise Exception(
+            'Timeout waiting for {}'.format(condition_function.__name__)
+        )
 
 class wait_for_page_load(object):
 
@@ -47,11 +56,11 @@ class wait_for_page_load(object):
 
     def page_has_loaded(self):
         
-        pElement = WebDriverWait( self.browser, WAIT_FOR_ELEMENT ).until(EC.visibility_of_element_located((By.XPATH, '//div[@class=\'total_div\']/span[@class=\'total\']')) )
-        return pElement.text != self.old_text
+        new_text = self.browser.find_element_by_xpath('//div[@class=\'total_div\']/span[@class=\'total\']').text
+        return new_text != self.old_text
 
     def __exit__(self, *_):
-        wait_for(self.page_has_loaded)
+        wait_for(self.page_has_loaded, self.browser, True)
 
 def enterEmailInfo(paginationDriver):
 
@@ -89,6 +98,7 @@ def handlePass(numPass, totalElementsCheck, paginationDriver):
         
         while True:           
 
+            wElement = WebDriverWait(paginationDriver, WAIT_FOR_ELEMENT).until(EC.element_to_be_clickable((By.XPATH, '//p[@class=\'pager\'][1]/button[last()]')) )
             lElements = paginationDriver.find_elements_by_xpath('//div[@id=\'new-prop-list\']/div/div[@class=\'property-data-container \']/div[@class=\'desc\']/a')
 
             if (numPrinted+NUM_URLS_PER_PAGE)==totalElementsCheck:            
@@ -108,8 +118,6 @@ def handlePass(numPass, totalElementsCheck, paginationDriver):
 
                 numPrinted+=NUM_URLS_PER_PAGE                    
 
-            wElement = paginationDriver.find_element_by_xpath('//p[@class=\'pager\'][1]/button[last()]')        
-
             with wait_for_page_load(paginationDriver):
                 wElement.click()
 
@@ -126,7 +134,7 @@ def handleLastPass(numPass, paginationDriver):
 
         while True:
 
-            wElement = paginationDriver.find_element_by_xpath('//p[@class=\'pager\'][1]/button[last()]')
+            wElement = WebDriverWait(paginationDriver, WAIT_FOR_ELEMENT).until(EC.element_to_be_clickable((By.XPATH, '//p[@class=\'pager\'][1]/button[last()]')) )
             lElements = paginationDriver.find_elements_by_xpath('//div[@id=\'new-prop-list\']/div/div[@class=\'property-data-container \']/div[@class=\'desc\']/a')
 
             if wElement.text == 'Siguiente>>':
@@ -156,7 +164,7 @@ def parse(paginationDriver):
     paginationDriver.refresh()
     time.sleep(WAIT_FOR_PAGE_LOAD)       
 
-    for x in range(0, NUM_PASSES):
+    for x in range(0, NUM_PASSES-1):
 
         handlePass(x, HANDLE_MAX_NUM_PAGES_PER_PASS*NUM_URLS_PER_PAGE, paginationDriver)
 
@@ -165,7 +173,7 @@ def parse(paginationDriver):
 
         time.sleep(WAIT_FOR_PAGE_LOAD)   
 
-    handleLastPass(NUM_PASSES, paginationDriver)        
+    handleLastPass(NUM_PASSES-1, paginationDriver)        
 
     paginationDriver.close()    
 
