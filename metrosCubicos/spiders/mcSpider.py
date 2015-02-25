@@ -331,21 +331,21 @@ class MCSpider(scrapy.Spider):
 
                 newItem['MC_Renta_vacacional_diaria'] = 1
 
-                priceStr = self.extractText( hxs.xpath("//div[@id=\'dvPRenta\']/div/table/tr[3]/td["+index+"]/text()").extract(), 0) 
+                priceStr = self.extractText( hxs.xpath("//div[@id=\'dvPRenta\']/div/table/tr[3]/td["+str(index)+"]/text()").extract(), 0) 
                 self.fillPriceVals(priceStr, newItem, 'MC_Monto_Precio_de_renta_vacacional_diaria', 'MC_Moneda_Precio_de_renta_vacacional_diaria')
 
             elif x==u'Por fin de semana':
 
                 newItem['MC_Renta_vacacional_fin_de_semana'] = 1                
 
-                priceStr = self.extractText( hxs.xpath("//div[@id=\'dvPRenta\']/div/table/tr[3]/td["+index+"]/text()").extract(), 0) 
+                priceStr = self.extractText( hxs.xpath("//div[@id=\'dvPRenta\']/div/table/tr[3]/td["+str(index)+"]/text()").extract(), 0) 
                 self.fillPriceVals(priceStr, newItem, 'MC_Monto_Precio_de_renta_vacacional_fin_de_semana', 'MC_Moneda_Precio_de_renta_vacacional_fin_de_semana')                
 
             elif x==u'Semanal':
 
                 newItem['MC_Renta_vacacional_semanal'] = 1                        
 
-                priceStr = self.extractText( hxs.xpath("//div[@id=\'dvPRenta\']/div/table/tr[3]/td["+index+"]/text()").extract(), 0) 
+                priceStr = self.extractText( hxs.xpath("//div[@id=\'dvPRenta\']/div/table/tr[3]/td["+str(index)+"]/text()").extract(), 0) 
                 self.fillPriceVals(priceStr, newItem, 'MC_Monto_Precio_de_renta_vacacional_semanal', 'MC_Moneda_Precio_de_renta_vacacional_semanal')                                
 
             index = index+1
