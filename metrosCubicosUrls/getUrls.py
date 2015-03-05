@@ -8,6 +8,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from xvfbwrapper import Xvfb
 
 DUMMY_URL = 'http://www.metroscubicos.com/resultados/#sort=relevance&selected=1'
 START_URL = 'http://www.metroscubicos.com/resultados/#sort=relevance&selected='
@@ -85,7 +86,7 @@ def getInfo(paginationDriver):
     return int(numPages)
 
 
-def handlePass(numPass, totalElementsCheck, paginationDriver):
+def handlePass(numPass, totalElementsCheck, paginationDriver, numLinks):
 
     fName='part'+str(numPass)+'.py'
     shutil.copy(TEMPLATE_NAME, fName)
@@ -96,10 +97,14 @@ def handlePass(numPass, totalElementsCheck, paginationDriver):
 
         myfile.write("[")
         
-        while True:           
+        while True:
+
+            print('Gathered links: '+str(numLinks))
 
             wElement = WebDriverWait(paginationDriver, WAIT_FOR_ELEMENT).until(EC.element_to_be_clickable((By.XPATH, '//p[@class=\'pager\'][1]/button[last()]')) )
             lElements = paginationDriver.find_elements_by_xpath('//div[@id=\'new-prop-list\']/div/div[@class=\'property-data-container \']/div[@class=\'desc\']/a')
+
+            numLinks+=NUM_URLS_PER_PAGE
 
             if (numPrinted+NUM_URLS_PER_PAGE)==totalElementsCheck:            
 
@@ -116,12 +121,14 @@ def handlePass(numPass, totalElementsCheck, paginationDriver):
                 for x in lElements:
                     myfile.write("\'"+x.get_attribute('href')+"\'"+",")
 
-                numPrinted+=NUM_URLS_PER_PAGE                    
+                numPrinted+=NUM_URLS_PER_PAGE            
 
             with wait_for_page_load(paginationDriver):
                 wElement.click()
 
-def handleLastPass(numPass, paginationDriver):
+        return numLinks                
+
+def handleLastPass(numPass, paginationDriver, numLinks):
 
     fName='part'+str(numPass)+'.py'
     shutil.copy(TEMPLATE_NAME, fName)
@@ -134,10 +141,14 @@ def handleLastPass(numPass, paginationDriver):
 
         while True:
 
+            print('Gathered links: '+str(numLinks))
+
             wElement = WebDriverWait(paginationDriver, WAIT_FOR_ELEMENT).until(EC.element_to_be_clickable((By.XPATH, '//p[@class=\'pager\'][1]/button[last()]')) )
             lElements = paginationDriver.find_elements_by_xpath('//div[@id=\'new-prop-list\']/div/div[@class=\'property-data-container \']/div[@class=\'desc\']/a')
 
             if wElement.text == 'Siguiente>>':
+
+            	numLinks+=NUM_URLS_PER_PAGE
 
                 for x in lElements:
                     myfile.write("\'"+x.get_attribute('href')+"\'"+",")
@@ -147,6 +158,8 @@ def handleLastPass(numPass, paginationDriver):
 
             else:
 
+            	numLinks+=len(lElements)
+
                 for x in lElements[:-1]:
                     myfile.write("\'"+x.get_attribute('href')+"\'"+",")
 
@@ -155,6 +168,8 @@ def handleLastPass(numPass, paginationDriver):
 
                 break
 
+        return numLinks               
+
 def parse(paginationDriver):
 
     enterEmailInfo(paginationDriver)
@@ -162,22 +177,30 @@ def parse(paginationDriver):
     numPages = getInfo(paginationDriver)
 
     paginationDriver.refresh()
-    time.sleep(WAIT_FOR_PAGE_LOAD)       
+    time.sleep(WAIT_FOR_PAGE_LOAD)
+
+    numLinks=0       
 
     for x in range(0, NUM_PASSES-1):
 
-        handlePass(x, HANDLE_MAX_NUM_PAGES_PER_PASS*NUM_URLS_PER_PAGE, paginationDriver)
+        numLinks = handlePass(x, HANDLE_MAX_NUM_PAGES_PER_PASS*NUM_URLS_PER_PAGE, paginationDriver, numLinks)
 
         paginationDriver.get(START_URL+str((x+1)*HANDLE_MAX_NUM_PAGES_PER_PASS+1))
         paginationDriver.refresh()
 
         time.sleep(WAIT_FOR_PAGE_LOAD)   
 
-    handleLastPass(NUM_PASSES-1, paginationDriver)        
+    numLinks = handleLastPass(NUM_PASSES-1, paginationDriver, numLinks)
 
-    paginationDriver.close()    
+    print('Gathered '+str(numLinks)+' in total');
+
+    paginationDriver.close()
+    xvfb.stop()    
 
 def main():
+
+    xvfb = Xvfb()
+    xvfb.start()
 
     options = webdriver.ChromeOptions()
     options.add_extension("Block-image_v1.0.crx")
