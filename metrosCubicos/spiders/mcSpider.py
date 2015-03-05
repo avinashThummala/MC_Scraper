@@ -3,6 +3,7 @@
 
 import scrapy, sys, locale, re, time
 from metrosCubicos.items import MetroscubicosItem
+from xvfbwrapper import Xvfb
 
 import part0;
 import part1;
@@ -10,6 +11,9 @@ import part2;
 
 from scrapy.http import Request
 from scrapy import Selector
+
+from scrapy import signals
+from scrapy.xlib.pydispatch import dispatcher
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -19,15 +23,21 @@ from selenium.webdriver.support import expected_conditions as EC
 
 DOMAIN = 'www.metroscubicos.com'
 DUMMY_URL = 'http://www.metroscubicos.com/resultados/'
-WAIT_TIME = 40
+WAIT_TIME = 15
+MULTIPLIER = 40
 
 class MCSpider(scrapy.Spider):
 
     name = 'mcspider'
     allowed_domains = [DOMAIN]
     start_urls = part0.getStartURLS()+part1.getStartURLS()+part2.getStartURLS()
+    xvfb = Xvfb()
 
     def __init__(self):
+
+        dispatcher.connect(self.on_spider_closed, signals.spider_closed)
+
+        self.xvfb.start()
 
         options = webdriver.ChromeOptions()
         options.add_extension("Block-image_v1.0.crx")
@@ -36,11 +46,14 @@ class MCSpider(scrapy.Spider):
 
         self.enterEmailInfo()
 
+    def on_spider_closed(spider, reason):
+        self.xvfb.stop()
+
     def enterEmailInfo(self):
 
         self.driver.get(DUMMY_URL)
 
-        mElement = WebDriverWait(self.driver, WAIT_TIME*15).until(EC.visibility_of_element_located((By.ID, "ouibounce-modal")) )
+        mElement = WebDriverWait(self.driver, WAIT_TIME*MULTIPLIER).until(EC.visibility_of_element_located((By.ID, "ouibounce-modal")) )
 
         tEmail = self.driver.find_element_by_xpath("//form[@id=\'bounce-form\']/input[@name=\'email\']")
         tEmail.send_keys('dhthummala@gmail.com')
