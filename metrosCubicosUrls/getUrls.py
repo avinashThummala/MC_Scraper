@@ -8,7 +8,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from xvfbwrapper import Xvfb
 
 DUMMY_URL = 'http://www.metroscubicos.com/resultados/#sort=relevance&selected=1'
 START_URL = 'http://www.metroscubicos.com/resultados/#sort=relevance&selected='
@@ -195,12 +194,8 @@ def parse(paginationDriver):
     print('Gathered '+str(numLinks)+' in total');
 
     paginationDriver.close()
-    xvfb.stop()    
 
 def main():
-
-    xvfb = Xvfb()
-    xvfb.start()
 
     options = webdriver.ChromeOptions()
     options.add_extension("Block-image_v1.0.crx")

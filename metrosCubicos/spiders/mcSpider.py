@@ -3,7 +3,6 @@
 
 import scrapy, sys, locale, re, time
 from metrosCubicos.items import MetroscubicosItem
-from xvfbwrapper import Xvfb
 
 import part0;
 import part1;
@@ -11,9 +10,6 @@ import part2;
 
 from scrapy.http import Request
 from scrapy import Selector
-
-from scrapy import signals
-from scrapy.xlib.pydispatch import dispatcher
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -31,13 +27,8 @@ class MCSpider(scrapy.Spider):
     name = 'mcspider'
     allowed_domains = [DOMAIN]
     start_urls = part0.getStartURLS()+part1.getStartURLS()+part2.getStartURLS()
-    xvfb = Xvfb()
 
     def __init__(self):
-
-        dispatcher.connect(self.on_spider_closed, signals.spider_closed)
-
-        self.xvfb.start()
 
         options = webdriver.ChromeOptions()
         options.add_extension("Block-image_v1.0.crx")
@@ -45,9 +36,6 @@ class MCSpider(scrapy.Spider):
         self.driver = webdriver.Chrome(chrome_options = options)
 
         self.enterEmailInfo()
-
-    def on_spider_closed(spider, reason):
-        self.xvfb.stop()
 
     def enterEmailInfo(self):
 
