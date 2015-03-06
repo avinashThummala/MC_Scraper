@@ -46,6 +46,8 @@ class MCSpider(scrapy.Spider):
 
         self.driver.get(DUMMY_URL)
 
+        self.driver.save_screenshot('first.png');
+
         mElement = WebDriverWait(self.driver, WAIT_TIME*MULTIPLIER).until(EC.visibility_of_element_located((By.ID, "ouibounce-modal")) )
 
         tEmail = self.driver.find_element_by_xpath("//form[@id=\'bounce-form\']/input[@name=\'email\']")
@@ -144,6 +146,10 @@ class MCSpider(scrapy.Spider):
     def getAgentTelephone(self, newItem, url):
 
         self.driver.get(url)
+
+        self.driver.save_screenshot('second.png')
+
+        os.exit(-1)
         
         try:
 
