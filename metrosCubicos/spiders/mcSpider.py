@@ -46,15 +46,15 @@ class MCSpider(scrapy.Spider):
 
         self.driver.get(DUMMY_URL)
 
-        self.driver.save_screenshot('first.png');
-
         mElement = WebDriverWait(self.driver, WAIT_TIME*MULTIPLIER).until(EC.visibility_of_element_located((By.ID, "ouibounce-modal")) )
 
         tEmail = self.driver.find_element_by_xpath("//form[@id=\'bounce-form\']/input[@name=\'email\']")
         tEmail.send_keys('dhthummala@gmail.com')
 
         sButton = self.driver.find_element_by_xpath("//form[@id=\'bounce-form\']/input[@type=\'button\']")
-        sButton.click()         
+        sButton.click()
+
+        self.driver.save_screenshot('first.png');        
 
     def extractText(self, eList, index):
 
@@ -146,10 +146,6 @@ class MCSpider(scrapy.Spider):
     def getAgentTelephone(self, newItem, url):
 
         self.driver.get(url)
-
-        self.driver.save_screenshot('second.png')
-
-        os._exit(-1)
         
         try:
 
@@ -157,11 +153,17 @@ class MCSpider(scrapy.Spider):
             wElement.click()
 
             phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.element_to_be_clickable((By.ID, "dvMuestraFon")) )
-            newItem['MC_Telephone'] = phoneNum.text.replace("Tel: ", "")                                              
+            newItem['MC_Telephone'] = phoneNum.text.replace("Tel: ", "")
+
+            self.driver.save_screenshot('second-Success.png')
 
         except:
             print "Unable to obtain agent's phone number"
             newItem['MC_Telephone'] = ''
+
+            self.driver.save_screenshot('second-Error.png')
+
+        os._exit(-1)
 
     def getBooleanValues(self, hxs, newItem):
 
