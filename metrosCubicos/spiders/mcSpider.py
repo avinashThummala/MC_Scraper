@@ -149,7 +149,7 @@ class MCSpider(scrapy.Spider):
 
         self.driver.save_screenshot('second.png')
 
-        os.exit(-1)
+        os._exit(-1)
         
         try:
 
