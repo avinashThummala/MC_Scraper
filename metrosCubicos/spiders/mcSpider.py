@@ -155,13 +155,13 @@ class MCSpider(scrapy.Spider):
             phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.element_to_be_clickable((By.ID, "dvMuestraFon")) )
             newItem['MC_Telephone'] = phoneNum.text.replace("Tel: ", "")
 
-            self.driver.save_screenshot('second-Success-'+url+'.png')
+            self.driver.save_screenshot('second-Success.png')
 
         except:
             print "Unable to obtain agent's phone number"
             newItem['MC_Telephone'] = ''
 
-            self.driver.save_screenshot('second-Error-'+url+'.png')
+            self.driver.save_screenshot('second-Error.png')
             self.driver.quit()
             os._exit(0)
 
