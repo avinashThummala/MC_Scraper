@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import scrapy, sys, locale, re, time, os
+import scrapy, sys, locale, re, time, os, traceback
 from metrosCubicos.items import MetroscubicosItem
 
 import part0;
@@ -149,19 +149,26 @@ class MCSpider(scrapy.Spider):
         
         try:
 
+            self.driver.execute_script("muestraFon()")
+
+            """
             wElement = WebDriverWait(self.driver, WAIT_TIME).until(EC.element_to_be_clickable((By.ID, "dvFon")) )
             wElement.click()
+            
+            print("Problem 1")
 
-            phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.element_to_be_clickable((By.ID, "dvMuestraFon")) )
+            phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.text_to_be_present_in_element((By.ID, "dvMuestraFon")) )
             newItem['MC_Telephone'] = phoneNum.text.replace("Tel: ", "")
+            """
 
-            self.driver.save_screenshot('second-Success.png')
+            newItem['MC_Telephone'] = self.driver.find_element_by_id('dvMuestraFon').text.replace("Tel: ", "")           
 
         except:
+
+            print traceback.format_exc()
             print "Unable to obtain agent's phone number"
             newItem['MC_Telephone'] = ''
 
-            self.driver.save_screenshot('second-Error.png')
             self.driver.quit()
             os._exit(0)
 
