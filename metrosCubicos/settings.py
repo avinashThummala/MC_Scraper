@@ -9,8 +9,9 @@
 #
 
 BOT_NAME = 'metrosCubicos'
-DOWNLOAD_TIMEOUT = 20
+DOWNLOAD_TIMEOUT = 30
 CONCURRENT_REQUESTS = 5
+DOWNLOAD_DELAY = 2
 
 SPIDER_MODULES = ['metrosCubicos.spiders']
 NEWSPIDER_MODULE = 'metrosCubicos.spiders'
