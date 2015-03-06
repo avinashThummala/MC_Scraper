@@ -153,9 +153,7 @@ class MCSpider(scrapy.Spider):
 
             """
             wElement = WebDriverWait(self.driver, WAIT_TIME).until(EC.element_to_be_clickable((By.ID, "dvFon")) )
-            wElement.click()
-            
-            print("Problem 1")
+            wElement.click()           
 
             phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.text_to_be_present_in_element((By.ID, "dvMuestraFon")) )
             newItem['MC_Telephone'] = phoneNum.text.replace("Tel: ", "")
