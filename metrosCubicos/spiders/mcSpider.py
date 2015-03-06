@@ -19,8 +19,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 DOMAIN = 'www.metroscubicos.com'
 DUMMY_URL = 'http://www.metroscubicos.com/resultados/'
-WAIT_TIME = 15
-MULTIPLIER = 40
+WAIT_TIME = 10
+MULTIPLIER = 60
 
 class MCSpider(scrapy.Spider):
 
@@ -155,15 +155,15 @@ class MCSpider(scrapy.Spider):
             phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.element_to_be_clickable((By.ID, "dvMuestraFon")) )
             newItem['MC_Telephone'] = phoneNum.text.replace("Tel: ", "")
 
-            self.driver.save_screenshot('second-Success.png')
+            self.driver.save_screenshot('second-Success-'+url+'.png')
 
         except:
             print "Unable to obtain agent's phone number"
             newItem['MC_Telephone'] = ''
 
-            self.driver.save_screenshot('second-Error.png')
-
-        os._exit(-1)
+            self.driver.save_screenshot('second-Error-'+url+'.png')
+            self.driver.quit()
+            os._exit(0)
 
     def getBooleanValues(self, hxs, newItem):
 
