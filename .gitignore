@@ -1,3 +1,4 @@
+metrosCubicos/*.pyc
 metrosCubicos/spiders/*.pyc
 *.pyc
 *.log
