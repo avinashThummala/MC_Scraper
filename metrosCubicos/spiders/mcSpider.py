@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import scrapy, sys, locale, re, time
+import scrapy, sys, locale, re, time, os
 from metrosCubicos.items import MetroscubicosItem
 
 import part0;
