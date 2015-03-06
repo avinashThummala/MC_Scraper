@@ -30,10 +30,15 @@ class MCSpider(scrapy.Spider):
 
     def __init__(self):
 
+    	"""
         options = webdriver.ChromeOptions()
         options.add_extension("Block-image_v1.0.crx")
 
         self.driver = webdriver.Chrome(chrome_options = options)
+        """
+
+        self.driver = webdriver.PhantomJS(service_args=['--load-images=no'])
+        self.driver.set_window_size(1120, 550)                
 
         self.enterEmailInfo()
 
