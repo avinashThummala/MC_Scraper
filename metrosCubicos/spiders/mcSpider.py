@@ -66,70 +66,75 @@ class MCSpider(scrapy.Spider):
         newItem['MC_Listing_URL'] = response.url
         newItem['MC_Ad_Code'] = self.extractText( hxs.xpath("//span[@id=\'alfaclave\']/text()").extract(), 0)
 
-        newItem['MC_Title'] = self.extractText( hxs.xpath("//div[@class=\'address-detalle-new\']/text()").extract(), 0)
-        newItem['MC_Description'] = self.extractText( hxs.xpath("string(//div[@id=\'dvDescripcionAc\']/div)").extract(), 0)
+        if newItem['MC_Ad_Code']:
 
-        self.getAgentTelephone(newItem, response.url)
+            newItem['MC_Title'] = self.extractText( hxs.xpath("//div[@class=\'address-detalle-new\']/text()").extract(), 0)
+            newItem['MC_Description'] = self.extractText( hxs.xpath("string(//div[@id=\'dvDescripcionAc\']/div)").extract(), 0)
 
-        self.getImageLinks(hxs, newItem)
+            self.getAgentTelephone(newItem, response.url)
 
-        string = self.extractText(hxs.xpath("//div[@class=\'address-detalle-new\']/text()").extract(), 0)
+            self.getImageLinks(hxs, newItem)
 
-        if string:        
-            newItem['MC_Estado'] = string[string.rindex(',')+1:].strip()
-        else:            
-            newItem['MC_Estado'] = ''             
+            string = self.extractText(hxs.xpath("//div[@class=\'address-detalle-new\']/text()").extract(), 0)
 
-        newItem['MC_Municipio'] = self.extractText( hxs.xpath("//section[@itemtype=\'http://schema.org/PostalAddress\']/meta[@itemprop=\'addressRegion\']/@content").extract(), 0)   
+            if string:        
+                newItem['MC_Estado'] = string[string.rindex(',')+1:].strip()
+            else:            
+                newItem['MC_Estado'] = ''             
 
-        if not newItem['MC_Municipio']:
+            newItem['MC_Municipio'] = self.extractText( hxs.xpath("//section[@itemtype=\'http://schema.org/PostalAddress\']/meta[@itemprop=\'addressRegion\']/@content").extract(), 0)   
 
-            string = response.url[38+len(newItem['MC_Estado']):]
-            newItem['MC_Municipio'] = string[:string.index('/')].replace("-"," ")
+            if not newItem['MC_Municipio']:
 
-        newItem['MC_Colonia'] = self.extractText( hxs.xpath("//section[@itemtype=\'http://schema.org/PostalAddress\']/meta[@itemprop=\'addressLocality\']/@content").extract(), 0)
-        newItem['MC_Calle_avenida'] = self.extractText( hxs.xpath("//section[@itemtype=\'http://schema.org/PostalAddress\']/meta[@itemprop=\'streetAddress\']/@content").extract(), 0)
+                string = response.url[38+len(newItem['MC_Estado']):]
+                newItem['MC_Municipio'] = string[:string.index('/')].replace("-"," ")
 
-        string = self.extractText( hxs.xpath("//h1[@class=\'title-detalle-new\']/span[@itemprop=\'name\']/text()").extract(), 0)
+            newItem['MC_Colonia'] = self.extractText( hxs.xpath("//section[@itemtype=\'http://schema.org/PostalAddress\']/meta[@itemprop=\'addressLocality\']/@content").extract(), 0)
+            newItem['MC_Calle_avenida'] = self.extractText( hxs.xpath("//section[@itemtype=\'http://schema.org/PostalAddress\']/meta[@itemprop=\'streetAddress\']/@content").extract(), 0)
 
-        if string:
+            string = self.extractText( hxs.xpath("//h1[@class=\'title-detalle-new\']/span[@itemprop=\'name\']/text()").extract(), 0)
 
-            sSList = string.split(' ')
+            if string:
 
-            newItem['MC_Tipo_de_inmueble'] = sSList[0]
-            newItem['MC_Categoria_de_inmueble'] = ''                        
+                sSList = string.split(' ')
 
-            if len(sSList)>1:                
-                newItem['MC_Categoria_de_inmueble'] = sSList[-1]                
+                newItem['MC_Tipo_de_inmueble'] = sSList[0]
+                newItem['MC_Categoria_de_inmueble'] = ''                        
+
+                if len(sSList)>1:                
+                    newItem['MC_Categoria_de_inmueble'] = sSList[-1]                
+
+            else:
+
+                newItem['MC_Tipo_de_inmueble'] = ''
+                newItem['MC_Categoria_de_inmueble'] = ''
+
+            self.getListingDetails(hxs, newItem)
+            self.getBooleanValues(hxs, newItem)        
+
+            newItem['MC_Video'] = self.extractText( response.xpath("//div[@id=\'video\']/div/iframe/@src").extract(), 0)   
+
+            newItem['MC_Latitude'] = self.extractText( response.xpath("//meta[@itemprop=\'latitude\']/@content").extract(), 0)   
+            newItem['MC_Longitude'] = self.extractText( response.xpath("//meta[@itemprop=\'longitude\']/@content").extract(), 0)                
+
+            self.getPriceDetails(hxs, newItem)
+
+            if newItem['MC_Numero_de_banos']=='':
+                self.checkListingDetails(hxs, newItem, 1)
+
+            if newItem['MC_Numero_de_recamaras']=='':
+                self.checkListingDetails(hxs, newItem, 2)
+
+            if newItem['MC_Metros_cuadrados_de_construccion']=='':
+                self.checkListingDetails(hxs, newItem, 3)   
+
+            if newItem['MC_Numero_de_espacios_para_autos']=='':
+                self.checkListingDetails(hxs, newItem, 4)                        
+
+            yield newItem
 
         else:
-
-            newItem['MC_Tipo_de_inmueble'] = ''
-            newItem['MC_Categoria_de_inmueble'] = ''
-
-        self.getListingDetails(hxs, newItem)
-        self.getBooleanValues(hxs, newItem)        
-
-        newItem['MC_Video'] = self.extractText( response.xpath("//div[@id=\'video\']/div/iframe/@src").extract(), 0)   
-
-        newItem['MC_Latitude'] = self.extractText( response.xpath("//meta[@itemprop=\'latitude\']/@content").extract(), 0)   
-        newItem['MC_Longitude'] = self.extractText( response.xpath("//meta[@itemprop=\'longitude\']/@content").extract(), 0)                
-
-        self.getPriceDetails(hxs, newItem)
-
-        if newItem['MC_Numero_de_banos']=='':
-            self.checkListingDetails(hxs, newItem, 1)
-
-        if newItem['MC_Numero_de_recamaras']=='':
-            self.checkListingDetails(hxs, newItem, 2)
-
-        if newItem['MC_Metros_cuadrados_de_construccion']=='':
-            self.checkListingDetails(hxs, newItem, 3)   
-
-        if newItem['MC_Numero_de_espacios_para_autos']=='':
-            self.checkListingDetails(hxs, newItem, 4)                        
-
-        yield newItem
+            print "Invalid Url: "+response.url
 
     def getAgentTelephone(self, newItem, url):
 
