@@ -19,7 +19,6 @@ from selenium.webdriver.support import expected_conditions as EC
 
 DOMAIN = 'www.metroscubicos.com'
 WAIT_TIME = 5
-MULTIPLIER = 60
 
 class MCSpider(scrapy.Spider):
 
@@ -30,7 +29,7 @@ class MCSpider(scrapy.Spider):
     def initiateDriver(self):
 
         self.driver = webdriver.PhantomJS(service_args=['--load-images=no'])
-        self.driver.set_page_load_timeout(WAIT_TIME*2)
+        self.driver.set_page_load_timeout(WAIT_TIME)
         self.driver.maximize_window()        
 
     def __init__(self):
@@ -41,9 +40,6 @@ class MCSpider(scrapy.Spider):
         options = webdriver.ChromeOptions()
         options.add_extension("Block-image_v1.0.crx")
         self.driver = webdriver.Chrome(chrome_options = options)
-
-        self.enterEmailInfo()
-        self.driver.refresh()
         """      
 
     def extractText(self, eList, index):
@@ -137,11 +133,12 @@ class MCSpider(scrapy.Spider):
 
         try:
             self.driver.get(url)
-
         except:
 
             print "**********Get URL timed out**********"
             self.driver.quit()
+            time.sleep(2)
+
             self.initiateDriver()
             self.loadUrl(url)            
 
