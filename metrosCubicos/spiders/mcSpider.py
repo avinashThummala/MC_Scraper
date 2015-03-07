@@ -136,8 +136,9 @@ class MCSpider(scrapy.Spider):
         except:
 
             print "**********Get URL timed out**********"
-            self.driver.quit()
-            time.sleep(2)
+
+            if self.driver:
+                self.driver.quit()
 
             self.initiateDriver()
             self.loadUrl(url)            
