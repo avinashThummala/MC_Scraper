@@ -19,7 +19,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 DOMAIN = 'www.metroscubicos.com'
 DUMMY_URL = 'http://www.metroscubicos.com/resultados/'
-WAIT_TIME = 10
+WAIT_TIME = 5
 MULTIPLIER = 60
 
 class MCSpider(scrapy.Spider):
@@ -38,7 +38,7 @@ class MCSpider(scrapy.Spider):
         """
 
         self.driver = webdriver.PhantomJS(service_args=['--load-images=no'])
-        self.driver.set_window_size(1120, 550)                
+        self.driver.maximize_window() 
 
         self.enterEmailInfo()
 
@@ -52,9 +52,7 @@ class MCSpider(scrapy.Spider):
         tEmail.send_keys('dhthummala@gmail.com')
 
         sButton = self.driver.find_element_by_xpath("//form[@id=\'bounce-form\']/input[@type=\'button\']")
-        sButton.click()
-
-        self.driver.save_screenshot('first.png');        
+        sButton.click()      
 
     def extractText(self, eList, index):
 
@@ -150,15 +148,6 @@ class MCSpider(scrapy.Spider):
         try:
 
             self.driver.execute_script("muestraFon()")
-
-            """
-            wElement = WebDriverWait(self.driver, WAIT_TIME).until(EC.element_to_be_clickable((By.ID, "dvFon")) )
-            wElement.click()           
-
-            phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.text_to_be_present_in_element((By.ID, "dvMuestraFon")) )
-            newItem['MC_Telephone'] = phoneNum.text.replace("Tel: ", "")
-            """
-
             newItem['MC_Telephone'] = self.driver.find_element_by_id('dvMuestraFon').text.replace("Tel: ", "")           
 
         except:
@@ -166,9 +155,6 @@ class MCSpider(scrapy.Spider):
             print traceback.format_exc()
             print "Unable to obtain agent's phone number"
             newItem['MC_Telephone'] = ''
-
-            self.driver.quit()
-            os._exit(0)
 
     def getBooleanValues(self, hxs, newItem):
 
