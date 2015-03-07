@@ -151,7 +151,11 @@ class MCSpider(scrapy.Spider):
 
             self.driver.execute_script("muestraFon()")
 
-            phoneNum = WebDriverWait(self.driver, 3).until(EC.text_to_be_present_in_element((By.ID, "dvMuestraFon")) )
+            """
+            Have to wait for the text to be updated
+            """
+            time.sleep(1)
+            
             newItem['MC_Telephone'] = self.driver.find_element_by_id('dvMuestraFon').text.replace("Tel: ", "")           
 
         except:
