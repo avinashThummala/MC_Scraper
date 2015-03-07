@@ -197,10 +197,15 @@ def parse(paginationDriver):
 
 def main():
 
+    """
     options = webdriver.ChromeOptions()
     options.add_extension("Block-image_v1.0.crx")
 
     paginationDriver = webdriver.Chrome(chrome_options = options)
+    """
+
+    paginationDriver = webdriver.PhantomJS(service_args=['--load-images=no'])
+    paginationDriver.maximize_window()     
 
     parse(paginationDriver)
 

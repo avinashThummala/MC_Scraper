@@ -30,7 +30,7 @@ class MCSpider(scrapy.Spider):
 
     def __init__(self):
 
-    	"""
+        """
         options = webdriver.ChromeOptions()
         options.add_extension("Block-image_v1.0.crx")
 
@@ -40,7 +40,10 @@ class MCSpider(scrapy.Spider):
         self.driver = webdriver.PhantomJS(service_args=['--load-images=no'])
         self.driver.maximize_window() 
 
+        """
         self.enterEmailInfo()
+        self.driver.refresh()
+        """
 
     def enterEmailInfo(self):
 
@@ -144,8 +147,10 @@ class MCSpider(scrapy.Spider):
     def getAgentTelephone(self, newItem, url):
 
         self.driver.get(url)
-        
+
         try:
+
+            phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvMuestraFon")) )            
 
             self.driver.execute_script("muestraFon()")
             newItem['MC_Telephone'] = self.driver.find_element_by_id('dvMuestraFon').text.replace("Tel: ", "")           
