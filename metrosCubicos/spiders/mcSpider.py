@@ -29,7 +29,7 @@ class MCSpider(scrapy.Spider):
     def initiateDriver(self):
 
         self.driver = webdriver.PhantomJS(service_args=['--load-images=no'])
-        self.driver.set_page_load_timeout(WAIT_TIME)
+        self.driver.set_page_load_timeout(60)
         self.driver.maximize_window()        
 
     def __init__(self):
