@@ -18,7 +18,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 DOMAIN = 'www.metroscubicos.com'
-DUMMY_URL = 'http://www.metroscubicos.com/resultados/'
 WAIT_TIME = 5
 MULTIPLIER = 60
 
@@ -28,10 +27,15 @@ class MCSpider(scrapy.Spider):
     allowed_domains = [DOMAIN]
     start_urls = part0.getStartURLS()+part1.getStartURLS()+part2.getStartURLS()
 
-    def __init__(self):
+    def initiateDriver(self):
 
         self.driver = webdriver.PhantomJS(service_args=['--load-images=no'])
-        self.driver.maximize_window() 
+        self.driver.set_page_load_timeout(WAIT_TIME*2)
+        self.driver.maximize_window()        
+
+    def __init__(self):
+
+        self.initiateDriver() 
 
         """
         options = webdriver.ChromeOptions()
@@ -40,19 +44,7 @@ class MCSpider(scrapy.Spider):
 
         self.enterEmailInfo()
         self.driver.refresh()
-        """
-
-    def enterEmailInfo(self):
-
-        self.driver.get(DUMMY_URL)
-
-        mElement = WebDriverWait(self.driver, WAIT_TIME*MULTIPLIER).until(EC.visibility_of_element_located((By.ID, "ouibounce-modal")) )
-
-        tEmail = self.driver.find_element_by_xpath("//form[@id=\'bounce-form\']/input[@name=\'email\']")
-        tEmail.send_keys('dhthummala@gmail.com')
-
-        sButton = self.driver.find_element_by_xpath("//form[@id=\'bounce-form\']/input[@type=\'button\']")
-        sButton.click()      
+        """      
 
     def extractText(self, eList, index):
 
@@ -141,21 +133,31 @@ class MCSpider(scrapy.Spider):
         else:
             print "Invalid Url: "+response.url
 
+    def loadUrl(self, url):
+
+        try:
+            self.driver.get(url)
+
+        except:
+
+            print "**********Get URL timed out**********"
+            self.driver.quit()
+            self.initiateDriver()
+            self.loadUrl(url)            
+
     def getAgentTelephone(self, newItem, url):
 
-        self.driver.get(url)
+        self.loadUrl(url)
 
         try:
 
             phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvMuestraFon")) )            
-
             self.driver.execute_script("muestraFon()")
 
             """
             Have to wait for the text to be updated
             """
             time.sleep(1)
-            
             newItem['MC_Telephone'] = self.driver.find_element_by_id('dvMuestraFon').text.replace("Tel: ", "")           
 
         except:
@@ -391,7 +393,7 @@ class MCSpider(scrapy.Spider):
                 return -1, -1
                 
         except:
-            return -1,-1                
+            return -1,-1
 
     def getRelevantRowIndex(self, hxs, pCIndex):
 
@@ -409,7 +411,7 @@ class MCSpider(scrapy.Spider):
             else:
                 break
 
-        return -1                                
+        return -1
 
     def checkListingDetails(self, hxs, newItem, numItem):
 
