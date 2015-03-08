@@ -64,16 +64,16 @@ class MCSpider(scrapy.Spider):
 
         try:
 
-            phoneNumButton = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvFon")) )
             self.driver.execute_script("muestraFon()")
-
+                    
             """
-            phoneNumButton.click()            
+            phoneNumButton = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvFon")) )
+            phoneNumButton.click()
             """
 
             time.sleep(SLEEP_TIME)
-            newItem['MC_Telephone'] = self.driver.find_element_by_id('dvMuestraFon').text.replace("Tel: ", "")
-            print 'The telephone number is -> '+newItem['MC_Telephone']
+            newItem['MC_Telephone'] = self.driver.find_element_by_id('phone').text.replace("Tel: ", "")
+            print 'The telephone number is -> '+newItem['MC_Telephone']            
 
         except:
             
