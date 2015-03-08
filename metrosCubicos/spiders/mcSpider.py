@@ -17,10 +17,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-DOMAIN = 'www.metroscubicos.com'
+"""
+Modifiable values
+"""
 WAIT_TIME = 6
-PAGE_LOAD_TIMEOUT = 180
 SLEEP_TIME = 2
+
+DOMAIN = 'www.metroscubicos.com'
+PAGE_LOAD_TIMEOUT = 180
 
 class MCSpider(scrapy.Spider):
 
@@ -52,7 +56,7 @@ class MCSpider(scrapy.Spider):
                 self.driver.quit()
 
             self.initiateDriver()
-            self.loadUrl(url)         
+            self.loadUrl(url)
 
     def getAgentTelephone(self, newItem, url):
 
@@ -60,9 +64,11 @@ class MCSpider(scrapy.Spider):
 
         try:
 
-            phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvMuestraFon")) )            
-            self.driver.execute_script("muestraFon()")
             time.sleep(SLEEP_TIME)
+            self.driver.execute_script("muestraFon()")
+            """
+            phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvMuestraFon")) )
+            """
 
             newItem['MC_Telephone'] = self.driver.find_element_by_id('dvMuestraFon').text.replace("Tel: ", "")
             print 'The telephone number is -> '+newItem['MC_Telephone']
