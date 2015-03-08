@@ -21,7 +21,7 @@ from selenium.webdriver.support import expected_conditions as EC
 Modifiable values
 """
 WAIT_TIME = 6
-SLEEP_TIME = 2
+SLEEP_TIME = 0.25
 
 DOMAIN = 'www.metroscubicos.com'
 PAGE_LOAD_TIMEOUT = 180
@@ -64,12 +64,14 @@ class MCSpider(scrapy.Spider):
 
         try:
 
-            time.sleep(SLEEP_TIME)
+            phoneNumButton = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvFon")) )
+            phoneNumButton.click()
+
+            """
             self.driver.execute_script("muestraFon()")
             """
-            phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvMuestraFon")) )
-            """
 
+            time.sleep(SLEEP_TIME)
             newItem['MC_Telephone'] = self.driver.find_element_by_id('dvMuestraFon').text.replace("Tel: ", "")
             print 'The telephone number is -> '+newItem['MC_Telephone']
 
@@ -83,14 +85,14 @@ class MCSpider(scrapy.Spider):
 
     def __init__(self):
 
-        self.initiateDriver()      
+        self.initiateDriver()
 
     def extractText(self, eList, index):
 
         if len(eList)>index:
             return eList[index].strip()
         else:
-            return ''                            
+            return ''
 
     def parse(self, response):
 
@@ -115,7 +117,7 @@ class MCSpider(scrapy.Spider):
             if string:        
                 newItem['MC_Estado'] = string[string.rindex(',')+1:].strip()
             else:            
-                newItem['MC_Estado'] = ''             
+                newItem['MC_Estado'] = ''
 
             newItem['MC_Municipio'] = self.extractText( hxs.xpath("//section[@itemtype=\'http://schema.org/PostalAddress\']/meta[@itemprop=\'addressRegion\']/@content").extract(), 0)   
 
@@ -134,10 +136,10 @@ class MCSpider(scrapy.Spider):
                 sSList = string.split(' ')
 
                 newItem['MC_Tipo_de_inmueble'] = sSList[0]
-                newItem['MC_Categoria_de_inmueble'] = ''                        
+                newItem['MC_Categoria_de_inmueble'] = ''
 
                 if len(sSList)>1:                
-                    newItem['MC_Categoria_de_inmueble'] = sSList[-1]                
+                    newItem['MC_Categoria_de_inmueble'] = sSList[-1]
 
             else:
 
@@ -164,7 +166,7 @@ class MCSpider(scrapy.Spider):
                 self.checkListingDetails(hxs, newItem, 3)   
 
             if newItem['MC_Numero_de_espacios_para_autos']=='':
-                self.checkListingDetails(hxs, newItem, 4)                        
+                self.checkListingDetails(hxs, newItem, 4)
 
             yield newItem
 
@@ -473,4 +475,4 @@ class MCSpider(scrapy.Spider):
         if priceStr:
             return priceStr
         else:
-            return self.extractText( hxs.xpath("//p[@class=\'precio bajo\']/span/text()").extract(), 0)                 
+            return self.extractText( hxs.xpath("//p[@class=\'precio bajo\']/span/text()").extract(), 0)
