@@ -83,6 +83,8 @@ class MCSpider(scrapy.Spider):
 
     def getAgentTelephone(self, newItem, url):
 
+        print "Trying to load the URL"
+
         cProcess = multiprocessing.Process(target=self.loadUrl(url))
         cProcess.start()
         cProcess.join(PAGE_LOAD_TIMEOUT)
@@ -99,7 +101,7 @@ class MCSpider(scrapy.Spider):
             phoneNumButton.click()
             time.sleep(SLEEP_TIME)
             """
-            
+
             self.driver.execute_script("muestraFon()")
             newItem['MC_Telephone'] = self.driver.find_element_by_id('phone').text.replace("Tel: ", "")
             print 'The telephone number is -> '+newItem['MC_Telephone']            

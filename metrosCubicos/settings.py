@@ -9,9 +9,9 @@
 #
 
 BOT_NAME = 'metrosCubicos'
-DOWNLOAD_TIMEOUT = 60
+DOWNLOAD_TIMEOUT = 180
 CONCURRENT_REQUESTS = 1
-DOWNLOAD_DELAY = 0.05
+DOWNLOAD_DELAY = 0.1
 
 SPIDER_MODULES = ['metrosCubicos.spiders']
 NEWSPIDER_MODULE = 'metrosCubicos.spiders'
@@ -19,4 +19,10 @@ NEWSPIDER_MODULE = 'metrosCubicos.spiders'
 ITEM_PIPELINES = {
 
     'metrosCubicos.pipelines.MetrosCubicosPipeline': 300,
+}
+
+DOWNLOAD_HANDLERS = {
+
+    'http': 'scrapy.core.downloader.handlers.http10.HTTP10DownloadHandler',
+    'https': 'scrapy.core.downloader.handlers.http10.HTTP10DownloadHandler',
 }
