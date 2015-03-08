@@ -25,7 +25,7 @@ WAIT_TIME = 6
 SLEEP_TIME = 0.25
 
 DOMAIN = 'www.metroscubicos.com'
-PAGE_LOAD_TIMEOUT = 5
+PAGE_LOAD_TIMEOUT = 6
 
 class MCSpider(scrapy.Spider):
 
@@ -35,50 +35,39 @@ class MCSpider(scrapy.Spider):
 
     def initiateDriver(self):
 
-        """
         self.driver = webdriver.PhantomJS(service_args=['--load-images=no'])        
+        """
         options = webdriver.ChromeOptions()
         options.add_extension("Block-image_v1.0.crx")
         self.driver = webdriver.Chrome(chrome_options = options)
         """
 
-        cap = webdriver.DesiredCapabilities.PHANTOMJS
-        cap["phantomjs.page.settings.resourceTimeout"] = PAGE_LOAD_TIMEOUT*1000
-        cap["phantomjs.page.settings.loadImages"] = False
-
-        self.driver = webdriver.PhantomJS(desired_capabilities=cap)
         self.driver.maximize_window()
 
     def loadUrl(self, url):
+
+        timeout = Timeout( PAGE_LOAD_TIMEOUT, Exception("Timed out!") )        
 
         try:
             self.driver.get(url)
 
         except:
-            print "*PhantomJS has crashed*"
- 
+            
             if self.driver:
+                print "* Get URL timed out *"
                 self.driver.quit()
+
+            else:
+                print "* PhantomJS has crashed *"                
 
             self.initiateDriver()
             self.loadUrl(url)
 
-    def getAgentTelephone(self, newItem, url):
-
-        """
-        timeout = Timeout( PAGE_LOAD_TIMEOUT, Exception("Timed out!") )
-
-        try:
-            self.loadUrl(url)
-
-        except:    
-            self.driver.quit()
-            self.getAgentTelephone(newItem, url)
-
         finally:
-            timeout.cancel()
-        """            
+            timeout.cancel()            
 
+    def getAgentTelephone(self, newItem, url):
+        
         self.loadUrl(url)            
 
         try:
@@ -87,10 +76,10 @@ class MCSpider(scrapy.Spider):
 
             """
             phoneNumButton = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvFon")) )
-            phoneNumButton.click()            
+            phoneNumButton.click()
+            time.sleep(SLEEP_TIME)
             """
 
-            time.sleep(SLEEP_TIME)
             newItem['MC_Telephone'] = self.driver.find_element_by_id('phone').text.replace("Tel: ", "")
             print 'The telephone number is -> '+newItem['MC_Telephone']            
 
