@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import scrapy, sys, locale, re, time, os, traceback, signal
+import scrapy, sys, locale, re, time, os, traceback, multiprocessing
 from metrosCubicos.items import MetroscubicosItem
 from eventlet.timeout import Timeout
 
@@ -46,6 +46,20 @@ class MCSpider(scrapy.Spider):
 
     def loadUrl(self, url):
 
+        try:
+            self.driver.get(url)
+
+        except:
+            
+            print "* PhantomJS has crashed *"
+
+            if not self.driver:
+                self.driver.quit()
+
+            self.initiateDriver()
+            self.loadUrl(url)
+
+        """
         timeout = Timeout( PAGE_LOAD_TIMEOUT, Exception("Timed out!") )        
 
         try:
@@ -64,22 +78,29 @@ class MCSpider(scrapy.Spider):
             self.loadUrl(url)
 
         finally:
-            timeout.cancel()            
+            timeout.cancel()
+        """
 
     def getAgentTelephone(self, newItem, url):
-        
-        self.loadUrl(url)            
 
+        cProcess = multiprocessing.Process(target=self.loadUrl(url))
+        cProcess.start()
+        cProcess.join(PAGE_LOAD_TIMEOUT)
+
+        if cProcess.is_alive():
+
+            print "* Get URL timed out *"
+            cProcess.terminate()
+            cProcess.join()                
+                        
         try:
-
-            self.driver.execute_script("muestraFon()")
-
             """
             phoneNumButton = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvFon")) )
             phoneNumButton.click()
             time.sleep(SLEEP_TIME)
             """
-
+            
+            self.driver.execute_script("muestraFon()")
             newItem['MC_Telephone'] = self.driver.find_element_by_id('phone').text.replace("Tel: ", "")
             print 'The telephone number is -> '+newItem['MC_Telephone']            
 
