@@ -20,9 +20,3 @@ ITEM_PIPELINES = {
 
     'metrosCubicos.pipelines.MetrosCubicosPipeline': 300,
 }
-
-DOWNLOAD_HANDLERS = {
-
-    'http': 'scrapy.core.downloader.handlers.http10.HTTP10DownloadHandler',
-    'https': 'scrapy.core.downloader.handlers.http10.HTTP10DownloadHandler',
-}

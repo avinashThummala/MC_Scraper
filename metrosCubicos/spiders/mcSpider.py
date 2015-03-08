@@ -47,7 +47,9 @@ class MCSpider(scrapy.Spider):
     def loadUrl(self, url):
 
         try:
+            print "Before call to get"
             self.driver.get(url)
+            print "After call to get"
 
         except:
             
@@ -86,8 +88,11 @@ class MCSpider(scrapy.Spider):
         print "Trying to load the URL"
 
         cProcess = multiprocessing.Process(target=self.loadUrl(url))
+        print "Before Start"
         cProcess.start()
+        print "After Start"
         cProcess.join(PAGE_LOAD_TIMEOUT)
+        print "After time elapsed"
 
         if cProcess.is_alive():
 
