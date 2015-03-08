@@ -22,10 +22,10 @@ from selenium.webdriver.support import expected_conditions as EC
 Modifiable values
 """
 WAIT_TIME = 6
-SLEEP_TIME = 1
+SLEEP_TIME = 0.25
 
 DOMAIN = 'www.metroscubicos.com'
-PAGE_LOAD_TIMEOUT = 180
+PAGE_LOAD_TIMEOUT = 5
 
 class MCSpider(scrapy.Spider):
 
@@ -35,14 +35,18 @@ class MCSpider(scrapy.Spider):
 
     def initiateDriver(self):
 
-        self.driver = webdriver.PhantomJS(service_args=['--load-images=no'])
         """
+        self.driver = webdriver.PhantomJS(service_args=['--load-images=no'])        
         options = webdriver.ChromeOptions()
         options.add_extension("Block-image_v1.0.crx")
         self.driver = webdriver.Chrome(chrome_options = options)
         """
 
-        self.driver.set_page_load_timeout(PAGE_LOAD_TIMEOUT)
+        cap = webdriver.DesiredCapabilities.PHANTOMJS
+        cap["phantomjs.page.settings.resourceTimeout"] = PAGE_LOAD_TIMEOUT*1000
+        cap["phantomjs.page.settings.loadImages"] = False
+
+        self.driver = webdriver.PhantomJS(desired_capabilities=cap)
         self.driver.maximize_window()
 
     def loadUrl(self, url):
@@ -51,7 +55,7 @@ class MCSpider(scrapy.Spider):
             self.driver.get(url)
 
         except:
-            print "*Get URL timed out*"
+            print "*PhantomJS has crashed*"
  
             if self.driver:
                 self.driver.quit()
@@ -61,6 +65,7 @@ class MCSpider(scrapy.Spider):
 
     def getAgentTelephone(self, newItem, url):
 
+        """
         timeout = Timeout( PAGE_LOAD_TIMEOUT, Exception("Timed out!") )
 
         try:
@@ -72,14 +77,17 @@ class MCSpider(scrapy.Spider):
 
         finally:
             timeout.cancel()
+        """            
+
+        self.loadUrl(url)            
 
         try:
 
-            phoneNumButton = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvFon")) )
-            phoneNumButton.click()
+            self.driver.execute_script("muestraFon()")
 
             """
-            self.driver.execute_script("muestraFon()")
+            phoneNumButton = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvFon")) )
+            phoneNumButton.click()            
             """
 
             time.sleep(SLEEP_TIME)
@@ -118,8 +126,6 @@ class MCSpider(scrapy.Spider):
 
             newItem['MC_Title'] = self.extractText( hxs.xpath("//div[@class=\'address-detalle-new\']/text()").extract(), 0)
             newItem['MC_Description'] = self.extractText( hxs.xpath("string(//div[@id=\'dvDescripcionAc\']/div)").extract(), 0)
-
-            self.getAgentTelephone(newItem, response.url)
 
             self.getImageLinks(hxs, newItem)
 
@@ -160,10 +166,10 @@ class MCSpider(scrapy.Spider):
             self.getListingDetails(hxs, newItem)
             self.getBooleanValues(hxs, newItem)        
 
-            newItem['MC_Video'] = self.extractText( response.xpath("//div[@id=\'video\']/div/iframe/@src").extract(), 0)   
+            newItem['MC_Video'] = self.extractText( hxs.xpath("//div[@id=\'video\']/div/iframe/@src").extract(), 0)   
 
-            newItem['MC_Latitude'] = self.extractText( response.xpath("//meta[@itemprop=\'latitude\']/@content").extract(), 0)   
-            newItem['MC_Longitude'] = self.extractText( response.xpath("//meta[@itemprop=\'longitude\']/@content").extract(), 0)                
+            newItem['MC_Latitude'] = self.extractText( hxs.xpath("//meta[@itemprop=\'latitude\']/@content").extract(), 0)   
+            newItem['MC_Longitude'] = self.extractText( hxs.xpath("//meta[@itemprop=\'longitude\']/@content").extract(), 0)                
 
             self.getPriceDetails(hxs, newItem)
 
@@ -178,6 +184,8 @@ class MCSpider(scrapy.Spider):
 
             if newItem['MC_Numero_de_espacios_para_autos']=='':
                 self.checkListingDetails(hxs, newItem, 4)
+
+            self.getAgentTelephone(newItem, response.url)                
 
             yield newItem
 
