@@ -21,7 +21,7 @@ from selenium.webdriver.support import expected_conditions as EC
 Modifiable values
 """
 WAIT_TIME = 6
-SLEEP_TIME = 0.25
+SLEEP_TIME = 1
 
 DOMAIN = 'www.metroscubicos.com'
 PAGE_LOAD_TIMEOUT = 180
@@ -65,10 +65,10 @@ class MCSpider(scrapy.Spider):
         try:
 
             phoneNumButton = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvFon")) )
-            phoneNumButton.click()
+            self.driver.execute_script("muestraFon()")
 
             """
-            self.driver.execute_script("muestraFon()")
+            phoneNumButton.click()            
             """
 
             time.sleep(SLEEP_TIME)
