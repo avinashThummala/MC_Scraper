@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import scrapy, sys, locale, re, time, os, traceback, multiprocessing
+import scrapy, sys, re, time, os, traceback, functools
 from metrosCubicos.items import MetroscubicosItem
-from eventlet.timeout import Timeout
+from threading import Thread
 
 import part0;
 import part1;
@@ -27,11 +27,47 @@ SLEEP_TIME = 0.25
 DOMAIN = 'www.metroscubicos.com'
 PAGE_LOAD_TIMEOUT = 6
 
+def timeout(timeout):
+
+    def deco(func):
+        @functools.wraps(func)
+
+        def wrapper(*args, **kwargs):
+
+            res = [Exception('function [%s] timeout [%s seconds] exceeded!' % (func.__name__, timeout))]
+
+            def newFunc():
+                try:
+                    res[0] = func(*args, **kwargs)
+                except Exception, e:
+                    res[0] = e
+
+            t = Thread(target=newFunc)
+            t.daemon = True
+
+            try:
+                t.start()
+                t.join(timeout)
+            except Exception, je:
+                print 'error starting thread'
+                raise je
+
+            ret = res[0]
+
+            if isinstance(ret, BaseException):
+                raise ret
+
+            return ret
+
+        return wrapper
+
+    return deco 
+
 class MCSpider(scrapy.Spider):
 
     name = 'mcspider'
     allowed_domains = [DOMAIN]
-    start_urls = part0.getStartURLS()+part1.getStartURLS()+part2.getStartURLS()
+    start_urls = part0.getStartURLS()+part1.getStartURLS()+part2.getStartURLS()   
 
     def initiateDriver(self):
 
@@ -46,59 +82,28 @@ class MCSpider(scrapy.Spider):
 
     def loadUrl(self, url):
 
-        try:
-            print "Before call to get"
-            self.driver.get(url)
-            print "After call to get"
-
-        except:
-            
-            print "* PhantomJS has crashed *"
-
-            if not self.driver:
-                self.driver.quit()
-
-            self.initiateDriver()
-            self.loadUrl(url)
-
-        """
-        timeout = Timeout( PAGE_LOAD_TIMEOUT, Exception("Timed out!") )        
+        func = timeout(timeout=PAGE_LOAD_TIMEOUT)(self.driver.get)        
 
         try:
-            self.driver.get(url)
+            print "Before call to get url"
+            func(url)
+            print "After call to get url"
 
         except:
             
             if self.driver:
-                print "* Get URL timed out *"
+                print "* Get URL has timed out *"
                 self.driver.quit()
 
             else:
-                print "* PhantomJS has crashed *"                
+                print "* PhantomJS has crashed *"                            
 
             self.initiateDriver()
             self.loadUrl(url)
 
-        finally:
-            timeout.cancel()
-        """
-
     def getAgentTelephone(self, newItem, url):
 
-        print "Trying to load the URL"
-
-        cProcess = multiprocessing.Process(target=self.loadUrl(url))
-        print "Before Start"
-        cProcess.start()
-        print "After Start"
-        cProcess.join(PAGE_LOAD_TIMEOUT)
-        print "After time elapsed"
-
-        if cProcess.is_alive():
-
-            print "* Get URL timed out *"
-            cProcess.terminate()
-            cProcess.join()                
+        self.loadUrl(url)
                         
         try:
             """
