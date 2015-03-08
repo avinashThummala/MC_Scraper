@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import scrapy, sys, locale, re, time, os, traceback
+import scrapy, sys, locale, re, time, os, traceback, signal
 from metrosCubicos.items import MetroscubicosItem
 
 import part0;
@@ -58,17 +58,30 @@ class MCSpider(scrapy.Spider):
             self.initiateDriver()
             self.loadUrl(url)
 
+    def signal_handler(self, signum, frame):
+        raise Exception("Timed out!")            
+
     def getAgentTelephone(self, newItem, url):
 
-        self.loadUrl(url)
+        signal.signal(signal.SIGALRM, self.signal_handler)
+        signal.alarm(PAGE_LOAD_TIMEOUT)
+
+        try:
+            self.loadUrl(url)
+
+        except Exception, msg:
+
+            print "Alarm has been raised "+url+" didn't load in "+PAGE_LOAD_TIMEOUT+" seconds"
+            self.driver.quit()
+            self.loadUrl(url)
 
         try:
 
-            self.driver.execute_script("muestraFon()")
-                    
-            """
             phoneNumButton = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvFon")) )
             phoneNumButton.click()
+
+            """
+            self.driver.execute_script("muestraFon()")
             """
 
             time.sleep(SLEEP_TIME)
