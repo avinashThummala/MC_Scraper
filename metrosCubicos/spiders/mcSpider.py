@@ -20,7 +20,7 @@ from selenium.webdriver.support import expected_conditions as EC
 DOMAIN = 'www.metroscubicos.com'
 WAIT_TIME = 6
 PAGE_LOAD_TIMEOUT = 180
-SLEEP_TIME = 1
+SLEEP_TIME = 2
 
 class MCSpider(scrapy.Spider):
 
@@ -64,14 +64,15 @@ class MCSpider(scrapy.Spider):
             self.driver.execute_script("muestraFon()")
             time.sleep(SLEEP_TIME)
 
-            newItem['MC_Telephone'] = self.driver.find_element_by_id('dvMuestraFon').text.replace("Tel: ", "")           
+            newItem['MC_Telephone'] = self.driver.find_element_by_id('dvMuestraFon').text.replace("Tel: ", "")
+            print 'The telephone number is -> '+newItem['MC_Telephone']
 
         except:
             
             print "Unable to obtain agent's phone number"
             print "URL -> "+url
             print traceback.format_exc()
-            
+
             newItem['MC_Telephone'] = ''
 
     def __init__(self):
