@@ -3,6 +3,7 @@
 
 import scrapy, sys, locale, re, time, os, traceback, signal
 from metrosCubicos.items import MetroscubicosItem
+from eventlet.timeout import Timeout
 
 import part0;
 import part1;
@@ -58,22 +59,19 @@ class MCSpider(scrapy.Spider):
             self.initiateDriver()
             self.loadUrl(url)
 
-    def signal_handler(self, signum, frame):
-        raise Exception("Timed out!")            
-
     def getAgentTelephone(self, newItem, url):
 
-        signal.signal(signal.SIGALRM, self.signal_handler)
-        signal.alarm(PAGE_LOAD_TIMEOUT)
+        timeout = Timeout( PAGE_LOAD_TIMEOUT, Exception("Timed out!") )
 
         try:
             self.loadUrl(url)
 
-        except Exception, msg:
-
-            print "Alarm has been raised "+url+" didn't load in "+PAGE_LOAD_TIMEOUT+" seconds"
+        except:    
             self.driver.quit()
-            self.loadUrl(url)
+            self.getAgentTelephone(newItem, url)
+
+        finally:
+            timeout.cancel()
 
         try:
 
