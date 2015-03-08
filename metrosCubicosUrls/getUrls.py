@@ -15,6 +15,7 @@ START_URL = 'http://www.metroscubicos.com/resultados/#sort=relevance&selected='
 WAIT_FOR_ELEMENT = 20
 WAIT_FOR_CHECK = 2
 WAIT_FOR_PAGE_LOAD = 5
+WAIT_POPUP = 600
 
 HANDLE_MAX_NUM_PAGES_PER_PASS = 1500
 NUM_PASSES = 4
@@ -66,7 +67,7 @@ def enterEmailInfo(paginationDriver):
 
     paginationDriver.get(DUMMY_URL)
 
-    mElement = WebDriverWait(paginationDriver, WAIT_FOR_ELEMENT*15).until(EC.visibility_of_element_located((By.ID, "ouibounce-modal")) )
+    mElement = WebDriverWait(paginationDriver, WAIT_POPUP).until(EC.visibility_of_element_located((By.ID, "ouibounce-modal")) )
 
     tEmail = paginationDriver.find_element_by_xpath("//form[@id=\'bounce-form\']/input[@name=\'email\']")
     tEmail.send_keys('dhthummala@gmail.com')
@@ -125,6 +126,13 @@ def handlePass(numPass, totalElementsCheck, paginationDriver, numLinks):
             with wait_for_page_load(paginationDriver):
                 wElement.click()
 
+            """
+            In case there is a problem with the conditioned wait. Just use:
+
+            wElement.click()
+            time.sleep(WAIT_FOR_PAGE_LOAD)
+            """                
+
         return numLinks                
 
 def handleLastPass(numPass, paginationDriver, numLinks):
@@ -147,7 +155,7 @@ def handleLastPass(numPass, paginationDriver, numLinks):
 
             if wElement.text == 'Siguiente>>':
 
-            	numLinks+=NUM_URLS_PER_PAGE
+                numLinks+=NUM_URLS_PER_PAGE
 
                 for x in lElements:
                     myfile.write("\'"+x.get_attribute('href')+"\'"+",")
@@ -155,9 +163,16 @@ def handleLastPass(numPass, paginationDriver, numLinks):
                 with wait_for_page_load(paginationDriver):
                     wElement.click()
 
+                """
+                In case there is a problem with the conditioned wait. Just use:
+
+                wElement.click()
+                time.sleep(WAIT_FOR_PAGE_LOAD)
+                """                     
+
             else:
 
-            	numLinks+=len(lElements)
+                numLinks+=len(lElements)
 
                 for x in lElements[:-1]:
                     myfile.write("\'"+x.get_attribute('href')+"\'"+",")

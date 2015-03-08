@@ -18,7 +18,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 DOMAIN = 'www.metroscubicos.com'
-WAIT_TIME = 5
+WAIT_TIME = 6
+PAGE_LOAD_TIMEOUT = 180
+SLEEP_TIME = 1
 
 class MCSpider(scrapy.Spider):
 
@@ -29,24 +31,57 @@ class MCSpider(scrapy.Spider):
     def initiateDriver(self):
 
         self.driver = webdriver.PhantomJS(service_args=['--load-images=no'])
-        self.driver.set_page_load_timeout(60)
-        self.driver.maximize_window()        
-
-    def __init__(self):
-
-        self.initiateDriver() 
-
         """
         options = webdriver.ChromeOptions()
         options.add_extension("Block-image_v1.0.crx")
         self.driver = webdriver.Chrome(chrome_options = options)
-        """      
+        """
+
+        self.driver.set_page_load_timeout(PAGE_LOAD_TIMEOUT)
+        self.driver.maximize_window()
+
+    def loadUrl(self, url):
+
+        try:
+            self.driver.get(url)
+
+        except:
+            print "*Get URL timed out*"
+ 
+            if self.driver:
+                self.driver.quit()
+
+            self.initiateDriver()
+            self.loadUrl(url)         
+
+    def getAgentTelephone(self, newItem, url):
+
+        self.loadUrl(url)
+
+        try:
+
+            phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvMuestraFon")) )            
+            self.driver.execute_script("muestraFon()")
+            time.sleep(SLEEP_TIME)
+
+            newItem['MC_Telephone'] = self.driver.find_element_by_id('dvMuestraFon').text.replace("Tel: ", "")           
+
+        except:
+            
+            print "Unable to obtain agent's phone number"
+            print "URL -> "+url
+            print traceback.format_exc()
+            
+            newItem['MC_Telephone'] = ''
+
+    def __init__(self):
+
+        self.initiateDriver()      
 
     def extractText(self, eList, index):
 
         if len(eList)>index:
             return eList[index].strip()
-
         else:
             return ''                            
 
@@ -127,42 +162,7 @@ class MCSpider(scrapy.Spider):
             yield newItem
 
         else:
-            print "Invalid Url: "+response.url
-
-    def loadUrl(self, url):
-
-        try:
-            self.driver.get(url)
-        except:
-
-            print "**********Get URL timed out**********"
-
-            if self.driver:
-                self.driver.quit()
-
-            self.initiateDriver()
-            self.loadUrl(url)            
-
-    def getAgentTelephone(self, newItem, url):
-
-        self.loadUrl(url)
-
-        try:
-
-            phoneNum = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvMuestraFon")) )            
-            self.driver.execute_script("muestraFon()")
-
-            """
-            Have to wait for the text to be updated
-            """
-            time.sleep(1)
-            newItem['MC_Telephone'] = self.driver.find_element_by_id('dvMuestraFon').text.replace("Tel: ", "")           
-
-        except:
-
-            print traceback.format_exc()
-            print "Unable to obtain agent's phone number"
-            newItem['MC_Telephone'] = ''
+            print "Invalid Url: "+response.url            
 
     def getBooleanValues(self, hxs, newItem):
 
