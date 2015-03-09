@@ -57,9 +57,8 @@ running the same spider with different "start_urls".
 start_urls = part0.getStartURLS()</code></pre>
 
 <strong>Spider 2:</strong>
-<code><pre>import part1
-start_urls = part1.getStartURLS()
-</pre></code>
+<pre><code>import part1
+start_urls = part1.getStartURLS()</code></pre>
 
 <strong>Spider 3:</strong>
 <pre><code>import part2
