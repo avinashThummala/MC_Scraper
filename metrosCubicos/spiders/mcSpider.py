@@ -4,9 +4,9 @@
 import scrapy, sys, re, time, os, traceback
 from metrosCubicos.items import MetroscubicosItem
 
-import part0;
-import part1;
-import part2;
+import part0
+import part1
+import part2
 
 from scrapy.http import Request
 from scrapy import Selector
