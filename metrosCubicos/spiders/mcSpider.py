@@ -1,9 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import scrapy, sys, re, time, os, traceback, functools
+import scrapy, sys, re, time, os, traceback
 from metrosCubicos.items import MetroscubicosItem
-from threading import Thread
 
 import part0;
 import part1;
@@ -19,49 +18,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 """
-Modifiable values
+Modifiable values. Not used at the moment
 """
 WAIT_TIME = 6
 SLEEP_TIME = 0.25
 
 DOMAIN = 'www.metroscubicos.com'
-PAGE_LOAD_TIMEOUT = 6
-
-def timeout(timeout):
-
-    def deco(func):
-        @functools.wraps(func)
-
-        def wrapper(*args, **kwargs):
-
-            res = [Exception('function [%s] timeout [%s seconds] exceeded!' % (func.__name__, timeout))]
-
-            def newFunc():
-                try:
-                    res[0] = func(*args, **kwargs)
-                except Exception, e:
-                    res[0] = e
-
-            t = Thread(target=newFunc)
-            t.daemon = True
-
-            try:
-                t.start()
-                t.join(timeout)
-            except Exception, je:
-                print 'error starting thread'
-                raise je
-
-            ret = res[0]
-
-            if isinstance(ret, BaseException):
-                raise ret
-
-            return ret
-
-        return wrapper
-
-    return deco 
+PAGE_LOAD_TIMEOUT = 10
+PORT = 65000
 
 class MCSpider(scrapy.Spider):
 
@@ -71,42 +35,52 @@ class MCSpider(scrapy.Spider):
 
     def initiateDriver(self):
 
-        self.driver = webdriver.PhantomJS(service_args=['--load-images=no'])        
         """
+        Working with version 1.9.8 which supports a resource timeout. 2.0.1 seems to ignore the value provided.
+        """
+
+        self.driver = webdriver.PhantomJS(executable_path='../Phantomjs_1.9.8/phantomjs', service_args=['--load-images=no'], port=PORT)
+
+        """
+        In case you want to want to go with chrome
+
         options = webdriver.ChromeOptions()
         options.add_extension("Block-image_v1.0.crx")
         self.driver = webdriver.Chrome(chrome_options = options)
         """
 
+        self.driver.set_page_load_timeout(PAGE_LOAD_TIMEOUT)
         self.driver.maximize_window()
-
+            
     def loadUrl(self, url):
 
-        func = timeout(timeout=PAGE_LOAD_TIMEOUT)(self.driver.get)        
-
         try:
-            print "Before call to get url"
-            func(url)
-            print "After call to get url"
+            print "* Before call to get url *"
+            self.driver.get(url)
+            print "* After call to get url *"
 
         except:
             
             if self.driver:
                 print "* Get URL has timed out *"
                 self.driver.quit()
+                print "* After driver quit *"
 
             else:
-                print "* PhantomJS has crashed *"                            
+                print "* PhantomJS has crashed *"
 
             self.initiateDriver()
-            self.loadUrl(url)
+            self.loadUrl(url)           
 
     def getAgentTelephone(self, newItem, url):
 
         self.loadUrl(url)
                         
         try:
+
             """
+            In case there is a problem with execute_script
+
             phoneNumButton = WebDriverWait(self.driver, WAIT_TIME).until(EC.presence_of_element_located((By.ID, "dvFon")) )
             phoneNumButton.click()
             time.sleep(SLEEP_TIME)
@@ -516,4 +490,4 @@ class MCSpider(scrapy.Spider):
         if priceStr:
             return priceStr
         else:
-            return self.extractText( hxs.xpath("//p[@class=\'precio bajo\']/span/text()").extract(), 0)
+            return self.extractText( hxs.xpath("//p[@class=\'precio bajo\']/span/text()").extract(), 0)            
