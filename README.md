@@ -45,36 +45,29 @@ spider.
 You need to copy the generated parts (part*.py) to "metrocCubicos/spiders" directory and then make a few changes to the spider itself.
 Take a look at the following set of lines:
 
-<code>
-import part0<br>
-import part1<br>
-import part2<br><br>
-start_urls = part0.getStartURLS()+part1.getStartURLS()+part2.getStartURLS()
-</code>
+<code><pre>import part0
+import part1
+import part2
+start_urls = part0.getStartURLS()+part1.getStartURLS()+part2.getStartURLS()</pre></code>
 
 Basically, I have included all the urls in this run and will be rendered by a single broswer. You can speed up the process some more,
 running the same spider with different "start_urls".
 
 <strong>Spider 1:</strong>
 
-<code>
-import part0<br>
-start_urls = part0.getStartURLS()
-</code>
+<code><pre>import part0
+start_urls = part0.getStartURLS()</pre></code>
 
 <strong>Spider 2:</strong>
 
-<code>
-import part1<br>
+<code><pre>import part1
 start_urls = part1.getStartURLS()
-</code>
+</pre></code>
 
 <strong>Spider 3:</strong>
 
-<code>
-import part2<br>
-start_urls = part2.getStartURLS()
-</code>
+<code><pre>import part2
+start_urls = part2.getStartURLS()</pre></code>
 
 Please do keep in mind that PhantomJS eats up a lot of memory. Finally you need to plug in your database related info in <strong>
 "metrosCubicos/pipelines.py" (Line11)</strong>.
@@ -82,15 +75,13 @@ Please do keep in mind that PhantomJS eats up a lot of memory. Finally you need 
 You also need to make sure to provide the path to the phantomjs executable and unblock the port (65,000 in our case). Take a look 
 at the following set of lines:
 
-<code>
-PORT = 65000<br>
-`self.driver = webdriver.PhantomJS(executable_path='../Phantomjs_1.9.8/phantomjs', service_args=['--load-images=no'], port=PORT)`
-</code>
+<code><pre>PORT = 65000
+self.driver = webdriver.PhantomJS(executable_path='../Phantomjs_1.9.8/phantomjs', service_args=['--load-images=no'], port=PORT)</pre></code>
 
 Now simply run:
 <strong>scrapy crawl mcspider > output 2>&1</strong>
 
 Depending on your bandwidth it will take between 1-2 days to crawl the entire website.
 
-In case a particular listing hasn't been added to the database, the relevant information can be found in "output". 
-Don't forget to check it out in the end.
+In case a particular listing hasn't been added to the database, the relevant information can be found in
+"output". Don't forget to check it out in the end.
